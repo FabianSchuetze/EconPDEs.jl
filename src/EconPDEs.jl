@@ -1,8 +1,8 @@
-module AssetPricingContinuousTime
+module EconPDEs
 
 
 import NLsolve: nlsolve
-import Distributions: Normal
+import Distributions: Normal, Gamma
 
 
 ##############################################################################
@@ -10,14 +10,27 @@ import Distributions: Normal
 ## Load files
 ##
 ##############################################################################
-include("utils.jl")
-include("BansalYaron.jl")
-include("GarleanuPanageas.jl")
+include("Ψtc.jl")
+include("models/utils.jl")
+include("models/solve.jl")
+include("models/BansalYaron.jl")
+include("models/GarleanuPanageas.jl")
+include("models/DiTella.jl")
 
 ##############################################################################
 ##
 ## Exported methods and types 
 ##
 ##############################################################################
-export solve,
+export Ψtc,
+hjb!,
+StateGrid,
+ReflectingArray,
+EconPDEModel,
+initialize, 
+solve,
+fullsolve,
+GarleanuPanageasModel,
+BansalYaronModel,
+DiTellaModel
 end

@@ -1,0 +1,80 @@
+\documentclass[english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{esint}
+\usepackage{babel}
+\begin{document}
+
+\title{Solving Economics PDE Models}
+\author{\large{\textsc{Matthieu Gomez \thanks{I thank Valentin Haddad and Ben Moll for useful discussions.}}}}
+\date{\today}
+\maketitle
+This note details how $\Psi tc$ works
+
+\section{Solving Finite Difference Schemes}
+
+\subsection{How $\Psi tc$ works}
+
+Denote $F(Y) = 0$ the finite difference scheme corresponding to your model. The model can be a set of PDE and algebraic equations.  The economics literature usually solves for $Y$ using one of the two methods:
+
+\begin{enumerate}
+	\item Newton-Raphson algorithm to solve the non linear system $F (Y ) = 0$. Updates take the form
+	\begin{align*}
+		0 &= F(y_{t}) + J_{F}(y_t) (y_{t+1} - y_t)
+	\end{align*}
+	The method converges only if the initial guess is sufficiently close to the solution. 
+	\item ODE methods to solve $F(Y) = \dot{Y}$. The steady state solution is obtained with $T\rightarrow +\infty$
+	With a simple explicit Euler method, updates take the form
+	\begin{align*}
+		0&= F(y_t) - \frac{1}{\Delta} (y_{t+1} -y_{t})
+	\end{align*}
+	Convergence conditions for this type of scheme is given by the Barles-Souganadis theorem / ODE stability theory. 
+\end{enumerate}
+I propose to use a fully implicit Euler method, which has better convergence properties than explicit schemes.  Updates take the form 
+\begin{align*}
+	\forall t \leq T \hspace{1cm} 0&= F(y_{t+1}) - \frac{1}{\Delta}(y_{t+1} -y_{t})
+\end{align*}
+Each time step is a non linear equation, which I solve using a Newton-Raphson method. These inner iterations take the form
+\begin{align*}
+	\forall i \leq I \hspace{1cm}	0 &= F(y_{t}^i) - \frac{1}{\Delta}(y_{t}^{i} -y_{t}) + (J_{F}(y_t^i) -  \frac{1}{\Delta})(y^{i+1}_{t} - y_t^i)
+\end{align*}
+As pointed above, the Newton-Raphson method converges when $y_t$ is sufficiently close to $y_{t+1}$. Therefore I decrease $\Delta$ until the inner Newton-Raphson method converges.\footnote{However, I cannot prove the convergence of the overall scheme when $\Delta$ depends on the step. The Barles-Souganadis theorem ensures that the implicit Euler scheme converges only with $\Delta$ fixed. }.\\
+The method accomodates algebraic equations by setting $\Delta = 0$ for these equations. In other words, PDEs are solved backward on a path that always satisfies the algebraic constraints.
+
+
+The algorithm usally converges in less than ten iterations. As $\Delta$ increases with successful iterations, the algorithm looks more and more like a Newton-Raphson algorithm, and therefore the convergence becomes quadratic around the solution.\\
+
+\subsection{Related Methods}
+	
+\begin{itemize}
+	\item 
+	When $I =1$ (i.e. with only one inner iteration) the update is a mix of a Newton-Raphson and explicit time step
+	\begin{align*}
+		\forall t \leq T \hspace{1cm} 0&= F(y_{t+1}) (J_{F}(y_t) - \frac{1}{\Delta})(y_{t+1} -y_{t})
+	\end{align*}
+	\item  With $I=1$, The method can be also be seen as a dampened Newton-Raphson algorithm. As in the Levenberg-Marquardt method, the diagonal of the Jacobian is modified until the algorithm gets close to the solution.
+	\item 
+	With $I=1$ and constant $\Delta$, we obtain the method in Achdou, Han, Lasry, Lions (2016) for a partial equilibrium consumption / saving  problem with separable preference. Allowing $\Delta$ to change over time and using $I > 1$ makes the algorithm more robust in my experience. Moreover, $\Psi tc$ handles systems including algebraic equations.
+
+	\item 
+	A similar algorithm is used in Fluid Dynamics. In this context, it is called Pseudo-Transient Continuation (denoted $\Psi tc$). 
+
+\end{itemize}
+
+\section{Writing Finite Difference Schemes}
+\begin{itemize}
+	\item 
+	Write the finite difference scheme so that the implicit Euler method satisfies the convergence conditions of Barles-Souganadis theorem (as much as possible). In particular,
+	\begin{itemize}
+		\item Upwind first derivatives (for instance see Achdou, Han, Lasry, Lions (2016))
+		\item Write the function $F$ so that $\dot{Y}$ would appear as such (i.e. not multiplied by some parameters). For instance, a typical PDE for the price dividend ratio should be written
+		\begin{align*}
+			0 &= p (\frac{1}{p} + E[\frac{dD}{D}] + E[\frac{dp}{p}] + \sigma[\frac{dp}{dp}]\sigma[\frac{dD}{dD}] - r - \kappa(\sigma[\frac{dp}{dp}] + \sigma[\frac{dD}{D}]))
+		\end{align*}
+	\end{itemize}
+	\item When solving for multiple functions, use the same economic quantities across the different equations. This ensures that the time step is comparable across different equations. For instance use the wealth / consumption of each agent in heterogeneous agent models. 
+\end{itemize}
+\end{document}
