@@ -38,6 +38,8 @@ ap = WangWangYangModel()
 grid = StateGrid(ap)
 y0 = initialize(ap, grid)
 result, distance = fullsolve(ap, grid, y0)
+
+# plot results
 using Plots
 plotly()
 plot(grid[:w], result[:p])
