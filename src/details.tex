@@ -31,7 +31,7 @@ Denote $F(Y) = 0$ the finite difference scheme corresponding to your model. The 
 	\begin{align*}
 		0&= F(y_t) - \frac{1}{\Delta} (y_{t+1} -y_{t})
 	\end{align*}
-	Convergence conditions for this type of scheme is given by the Barles-Souganadis theorem / ODE stability theory. 
+	Convergence conditions are given by the Barles-Souganadis theorem / ODE stability theory. Explicit schemes usually don't satisfy them.
 \end{enumerate}
 I propose to use a fully implicit Euler method, which has better convergence properties than explicit schemes.  Updates take the form 
 \begin{align*}
@@ -45,7 +45,7 @@ As pointed above, the Newton-Raphson method converges when $y_t$ is sufficiently
 The method accomodates algebraic equations by setting $\Delta = 0$ for these equations. In other words, PDEs are solved backward on a path that always satisfies the algebraic constraints.
 
 
-The algorithm usally converges in less than ten iterations. As $\Delta$ increases with successful iterations, the algorithm looks more and more like a Newton-Raphson algorithm, and therefore the convergence becomes quadratic around the solution.\\
+At the start of the algorithm, the jacobian is computed using analytical differenciation. It is then updated with Broyden updates. The algorithm usally converges quickly:  as $\Delta$ increases with successful iterations, the algorithm looks more and more like a Newton-Raphson algorithm, and therefore the convergence becomes quadratic around the solution.\\
 
 \subsection{Related Methods}
 	

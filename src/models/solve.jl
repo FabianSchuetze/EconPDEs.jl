@@ -11,11 +11,11 @@ abstract EconPDEModel
 
 function hjb!(apm::EconPDEModel, grid::StateGrid, y::Array, ydot::Array)
     n_functions = div(length(y), prod(size(grid)))
-    y = ReflectingArray(y)
+    fy = ReflectingArray(y)
     for i in eachindex(grid)
-        functionsi = derive(apm, grid, y, i)
+        functionsi = derive(apm, grid, fy, i)
         outi, drifti, othersi = pde(apm, grid[i], functionsi)
-        functionsi = derive(apm, grid, y, i, drifti)
+        functionsi = derive(apm, grid, fy, i, drifti)
         outi, drifti, othersi = pde(apm, grid[i], functionsi)
         for k in 1:n_functions
             ydot[i, k] = outi[k]

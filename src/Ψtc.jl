@@ -24,14 +24,14 @@ end
 function implicit_time_step(F!, ypost, Δ; is_algebraic = fill(false, size(ypost)...), verbose = true, iterations = 100, method = :newton, autodiff = true, maxdist = 1e-9)
     ysize = size(ypost)
     ypost = reshape(ypost, prod(ysize))
-    result = nlsolve((y, ydot) -> helper!(F!, y, ydot, ypost, Δ, is_algebraic, ysize), ypost; iterations = 100, show_trace = verbose, ftol = maxdist, method = method, autodiff = autodiff)
+    result = nlsolve((y, ydot) -> helper!(F!, y, ydot, ypost, Δ, is_algebraic, ysize), ypost; iterations = iterations, show_trace = verbose, ftol = maxdist, method = method, autodiff = autodiff)
     y = reshape(result.zero, ysize...)
     distance = result.residual_norm
     return y, distance
 end
 
 # Solve for steady state
-function Ψtc(F!, y0; Δ = 1.0, is_algebraic = fill(false, size(y0)...), iterations = 100, inner_iterations = 10, verbose = true, inner_verbose = false, method = :newton, autodiff = true, maxdist = 1e-9, scale = 2.0)
+function Ψtc(F!, y0; Δ = 1.0, is_algebraic = fill(false, size(y0)...), iterations = 100, inner_iterations = 25, verbose = true, inner_verbose = false, method = :newton, autodiff = true, maxdist = 1e-9, scale = 2.0)
     if Δ == Inf
         ypost, distance = implicit_time_step(F!, y0, Δ ; verbose = verbose, iterations = iterations,  method = method, autodiff = autodiff, maxdist = maxdist)
     else
