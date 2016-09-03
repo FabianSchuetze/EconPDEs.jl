@@ -35,11 +35,10 @@ function initialize(apm::DiTellaModel, grid::StateGrid)
     fill(1.0, size(grid)..., 3)
 end
 
-function derive(ap::DiTellaModel, statespace::StateGrid, y::ReflectingArray, ituple, drifti = (0.0, 0.0))
+@inline function derive(ap::DiTellaModel, statespace::StateGrid, y::ReflectingArray, ituple, drifti = (0.0, 0.0))
   ix, iν = ituple[1], ituple[2]
   μX, μν= drifti
   Δx, Δν = statespace.Δx
-
   pA = y[ix, iν, 1]
   pB = y[ix, iν, 2]
   p = y[ix, iν, 3]
@@ -75,7 +74,7 @@ function derive(ap::DiTellaModel, statespace::StateGrid, y::ReflectingArray, itu
   return pA, pAx, pAν, pAxx, pAxν, pAνν, pB, pBx, pBν, pBxx, pBxν, pBνν, p, px, pν, pxx, pxν, pνν
 end
 
-function pde(ap::DiTellaModel, gridi, functionsi)
+@inline function pde(ap::DiTellaModel, gridi, functionsi)
   x, ν = gridi
   pA, pAx, pAν, pAxx, pAxν, pAνν, pB, pBx, pBν, pBxx, pBxν, pBνν, p, px, pν, pxx, pxν, pνν = functionsi
   γ = ap.γ ; ψ = ap.ψ ; ρ = ap.ρ ; τ = ap.τ ; A = ap.A ; σ = ap.σ ; ϕ = ap.ϕ ; νbar = ap.νbar ; κν = ap.κν ; σνbar = ap.σνbar
@@ -83,7 +82,6 @@ function pde(ap::DiTellaModel, gridi, functionsi)
   σν = σνbar * sqrt(ν)
   g = p / (2 * A)
   i = A * g^2
-
   σX = x * (1 - x) * (1 - γ) / (γ * (ψ - 1)) * (pAν / pA - pBν / pB) * σν / (1 - x * (1 - x) * (1 - γ) / (γ * (ψ - 1)) * (pAx / pA - pBx / pB))
   σpA = pAx / pA * σX + pAν / pA * σν
   σpB = pBx / pB * σX + pBν / pB * σν
@@ -93,16 +91,16 @@ function pde(ap::DiTellaModel, gridi, functionsi)
   σA = κ / γ + (1 - γ) / (γ * (ψ - 1)) * σpA
   νA = κi / γ
   σB = κ / γ + (1 - γ) / (γ * (ψ - 1)) * σpB
-  νBi = zero(eltype(νA))
+  νB = zero(eltype(νA))
 
-  μX = x * (1 - x) * (σA * κ + νA * κi - 1 / pA - τ - (σB * κ + νBi * κi -  1 / pB) - (σA - σB) * (σ + σp))
+  μX = x * (1 - x) * (σA * κ + νA * κi - 1 / pA - τ - (σB * κ + νB * κi -  1 / pB) - (σA - σB) * (σ + σp))
   μpA = pAx / pA * μX + pAν / pA * μν + 0.5 * pAxx / pA * σX^2 + 0.5 * pAνν / pA * σν^2 + pAxν / pA * σX * σν
   μpB = pBx / pB * μX + pBν / pB * μν + 0.5 * pBxx / pB * σX^2 + 0.5 * pBνν / pB * σν^2 + pBxν / pB * σX * σν
   μp = px / p * μX + pν / p * μν + 0.5 * pxx / p * σX^2 + 0.5 * pνν / p * σν^2 + pxν / p * σX * σν
 
   r = (1 - i) / p + g + μp + σ * σp - κ * (σ + σp) - γ / x * (ϕ * ν)^2
   out1 = pA * (1 / pA  + (ψ - 1) * τ / (1 - γ) * ((pA / pB)^((1 - γ) / (1 - ψ)) - 1) - ψ * ρ + (ψ - 1) * (r + κ * σA + κi * νA) + μpA - (ψ - 1) * γ / 2 * (σA^2 + νA^2) + (2 - ψ - γ) / (2 * (ψ - 1)) * σpA^2 + (1 - γ) * σpA * σA)
-  out2 = pB * (1 / pB - ψ * ρ + (ψ - 1) * (r + κ * σB + κi * νBi) + μpB - (ψ - 1) * γ / 2 * (σB^2 + νBi^2) + (2 - ψ - γ) / (2 * (ψ - 1)) * σpB^2 + (1 - γ) * σpB * σB)
+  out2 = pB * (1 / pB - ψ * ρ + (ψ - 1) * (r + κ * σB + κi * νB) + μpB - (ψ - 1) * γ / 2 * (σB^2 + νBi^2) + (2 - ψ - γ) / (2 * (ψ - 1)) * σpB^2 + (1 - γ) * σpB * σB)
   out3 = p * ((1 - i) / p - x / pA - (1 - x) / pB)
   return (out1, out2, out3), (μX, μν), (:p => p, :pA => pA, :pB => pB, :κ => κ, :r => r, :μX => μX, :σX => σX)
 end

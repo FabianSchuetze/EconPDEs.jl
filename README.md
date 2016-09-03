@@ -84,7 +84,7 @@ using EconPDEs
 ap = DiTellaModel()
 grid = StateGrid(ap)
 y0 = initialize(ap, grid)
-is_algebraic = fill(false, size(y0)..)
+is_algebraic = fill(false, size(y0)...)
 is_algebraic[:, :, 3] = true
 result, distance = fullsolve(ap, grid, y0, is_algebraic = is_algebraic)
 
