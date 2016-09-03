@@ -25,11 +25,27 @@ The underlying algorithm is explained in details [here](https://github.com/matth
 
 
 # Models
-I solve several asset pricing models to show how `Ψct` works. Models are coded in the folder `src/models`. 
+I solve several models to show how `Ψct` works. Models are coded in the folder `src/models`. 
 
 Open an issue or send me an email if you spot mistakes. Pull requests are welcome.
 
+
+### Wang Wang Yang (2016)
+Consumption - saving problem with idiosyncratic income risk
+```julia
+using EconPDEs
+ap = WangWangYangModel()
+grid = StateGrid(ap)
+y0 = initialize(ap, grid)
+result, distance = fullsolve(ap, grid, y0)
+using Plots
+plotly()
+plot(grid[:w], result[:p])
+```
+
 ### Bansal Yaron (2004)
+Representative agent GE model + Time varying drift and volatility
+
 ```julia
 using EconPDEs
 ap = BansalYaronModel()
@@ -44,7 +60,7 @@ surface(grid[:μ], grid[:σ], result[:p])
 ```
 
 ### Garleanu Panageas (2015)
-
+Heterogeneous agent GE model
 ```julia
 using EconPDEs
 ap = GarleanuPanageasModel()
@@ -59,13 +75,13 @@ plot(grid[:x], result[:p])
 ```
 
 ### DiTella (2016)
-
+Heterogeneous agent GE model + Time varying volatility
 ```julia
 using EconPDEs
 ap = DiTellaModel()
 grid = StateGrid(ap)
 y0 = initialize(ap, grid)
-is_algebraic = fill(false, size(y0)...)
+is_algebraic = fill(false, size(y0)..)
 is_algebraic[:, :, 3] = true
 result, distance = fullsolve(ap, grid, y0, is_algebraic = is_algebraic)
 

@@ -16,6 +16,7 @@ include("models/solve.jl")
 include("models/BansalYaron.jl")
 include("models/GarleanuPanageas.jl")
 include("models/DiTella.jl")
+include("models/WangWangYang.jl")
 
 ##############################################################################
 ##
@@ -32,5 +33,6 @@ solve,
 fullsolve,
 GarleanuPanageasModel,
 BansalYaronModel,
-DiTellaModel
+DiTellaModel,
+WangWangYangModel
 end
