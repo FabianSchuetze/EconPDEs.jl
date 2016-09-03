@@ -31,7 +31,7 @@ function derive(apm::WangWangYangModel, stategrid::StateGrid, y::ReflectingArray
     Δw, = stategrid.Δx
     p = max(1e-10, y[iw])
     n = length(Δw)
-    # At boundaries, take derivatives forward / backward (we know there's no need to use boundary conditions)
+    # At boundaries, take derivatives forward / backward
     if μw >= 0.0
         pw = (y[iw + 1] - y[iw]) / Δw[iw]
     else
@@ -45,7 +45,7 @@ function derive(apm::WangWangYangModel, stategrid::StateGrid, y::ReflectingArray
     else
         pww = (y[iw + 1] + y[iw - 1] - 2 * y[iw]) / Δw[iw]^2
     end
-    # one boundary coundition: check consumption < 1 when w = 0
+    # financial friction: check consumption < 1 when w = 0
     if iw == 1 
         m = r + ψ * (ρ - r)
         c = m * p * pw^(-ψ)
@@ -53,7 +53,6 @@ function derive(apm::WangWangYangModel, stategrid::StateGrid, y::ReflectingArray
             pw = (m * p)^(1 / ψ)
         end
     end
-
     return p, pw, pww
 end
 
@@ -64,6 +63,6 @@ function pde(apm::WangWangYangModel, gridi, functionsi)
     m = r + ψ * (ρ - r)
     c = m * p * pw^(-ψ)
     out = ((m * pw^(1 - ψ) - ψ * ρ) / (ψ - 1) + μ - γ * σ^2 / 2) * p + ((r - μ + γ * σ^2) * w + 1) * pw + σ^2 * w^2 / 2  * (pww - γ * pw^2 / p)
-    drift = (r - μ + σ^2) * w + 1 - c
-    return out, drift, (:w => w, :p => p, :drift => drift, :pw => pw, :pww => pww, :μw => μw, :c => m * p * pw^(-ψ))
+    μw = (r - μ + σ^2) * w + 1 - c
+    return out, μw, (:w => w, :p => p, :pw => pw, :pww => pww, :μw => μw, :c => m * p * pw^(-ψ))
 end
