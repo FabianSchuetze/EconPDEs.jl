@@ -5,7 +5,7 @@ Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 
 The package introduces a novel, fast and robust solver for economics models in continuous time. 
 
-The package can solves PDEs, systems of PDEs, or systems of PDEs + algebraic equations.
+The function can solves PDEs, systems of PDEs, or systems of PDEs + algebraic equations.
 
 The underlying algorithm is explained in details [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf).
 
@@ -25,7 +25,7 @@ The underlying algorithm is explained in details [here](https://github.com/matth
 
 
 # Models
-The packages solves several asset pricing models to show how `Ψct` works. Models are coded in the folder `src/models`. I set the initial condition of each model to the constant `1.0` to show the robustness of the solution method.
+I solve several asset pricing models to show how `Ψct` works. Models are coded in the folder `src/models`. 
 
 Open an issue or send me an email if you spot mistakes. Pull requests are welcome.
 
