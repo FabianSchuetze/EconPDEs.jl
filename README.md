@@ -44,7 +44,7 @@ plot(grid[:w], result[:p])
 ```
 
 ### Bansal Yaron (2004)
-Representative agent GE model + Time varying drift and volatility
+Asset pricing model with time varying drift and volatility
 
 ```julia
 using EconPDEs
@@ -60,7 +60,7 @@ surface(grid[:μ], grid[:σ], result[:p])
 ```
 
 ### Garleanu Panageas (2015)
-Heterogeneous agent GE model
+Asset pricing model with heterogeneous agents
 ```julia
 using EconPDEs
 ap = GarleanuPanageasModel()
@@ -75,7 +75,8 @@ plot(grid[:x], result[:p])
 ```
 
 ### DiTella (2016)
-Heterogeneous agent GE model + Time varying volatility
+Asset pricing model with heterogeneous agents and time varying volatility
+
 ```julia
 using EconPDEs
 ap = DiTellaModel()
