@@ -23,7 +23,7 @@ function DiTellaModel(;γ = 5.0, ψ = 1.5, ρ = 0.05, τ = 0.4, A = 200.0, σ = 
   DiTellaModel(γ, ψ, ρ, τ, A, σ, ϕ, νbar, κν, σνbar)
 end
 
-function StateGrid(ap::DiTellaModel; xn = 100, νn = 10)
+function StateGrid(ap::DiTellaModel; xn = 80, νn = 5)
   γ = ap.γ ; ψ = ap.ψ ; ρ = ap.ρ ; τ = ap.τ ; A = ap.A ; σ = ap.σ ; ϕ = ap.ϕ ; νbar = ap.νbar ; κν = ap.κν ; σνbar = ap.σνbar
   distribution = Gamma(2 * κν * νbar / σνbar^2, σνbar^2 / (2 * κν))
   νmin = quantile(distribution, 0.001)
@@ -43,35 +43,33 @@ end
   pB = y[ix, iν, 2]
   p = y[ix, iν, 3]
   if μX <= 0.0
-    indx1 = 0
-    indx2 = -1
+    pAx = (y[ix, iν, 1] - y[ix - 1, iν, 1]) / Δx[ix]
+    pBx = (y[ix, iν, 2] - y[ix - 1, iν, 2]) / Δx[ix]
+    px = (y[ix, iν, 3] - y[ix - 1, iν, 3]) / Δx[ix]
   else
-    indx1 = 1
-    indx2 = 0
+    pAx = (y[ix + 1, iν, 1] - y[ix, iν, 1]) / Δx[ix]
+    pBx = (y[ix + 1, iν, 2] - y[ix, iν, 2]) / Δx[ix]
+    px = (y[ix + 1, iν, 3] - y[ix, iν, 3]) / Δx[ix]
   end
   if μν <= 0.0
-    indν1 = 0
-    indν2 = -1
+    pAν = (y[ix, iν, 1] - y[ix, iν - 1, 1]) / Δν[iν]
+    pBν = (y[ix, iν, 1] - y[ix, iν - 1, 1]) / Δν[iν]
+    pν = (y[ix, iν, 1] - y[ix, iν - 1, 1]) / Δν[iν]
   else
-    indν1 = 1
-    indν2 = 0
+    pAν = (y[ix, iν + 1, 1] - y[ix, iν, 1]) / Δν[iν]
+    pBν = (y[ix, iν + 1, 1] - y[ix, iν, 1]) / Δν[iν]
+    pν = (y[ix, iν + 1, 1] - y[ix, iν, 1]) / Δν[iν]
   end
-  pAx = (y[ix + indx1, iν, 1] - y[ix + indx2, iν, 1]) / Δx[ix]
-  pBx = (y[ix + indx1, iν, 2] - y[ix + indx2, iν, 2]) / Δx[ix]
-  px = (y[ix + indx1, iν, 3] - y[ix + indx2, iν, 3]) / Δx[ix]
-  pAν = (y[ix, iν + indν1, 1] - y[ix, iν + indν2, 1]) / Δν[iν]
-  pBν = (y[ix, iν + indν1, 2] - y[ix, iν + indν2, 2]) / Δν[iν]
-  pν = (y[ix, iν + indν1, 3] - y[ix, iν + indν2, 3]) / Δν[iν]
   pAxx = (y[ix + 1, iν, 1] + y[ix - 1, iν, 1] - 2 * y[ix, iν, 1]) / Δx[ix]^2
   pBxx = (y[ix + 1, iν, 2] + y[ix - 1, iν, 2] - 2 * y[ix, iν, 2]) / Δx[ix]^2
   pxx = (y[ix + 1, iν, 3] + y[ix - 1, iν, 3] - 2 * y[ix, iν, 3]) / Δx[ix]^2
   pAνν = (y[ix, iν + 1, 1] + y[ix, iν - 1, 1] - 2 * y[ix, iν, 1]) / Δν[iν]^2
   pBνν = (y[ix, iν + 1, 2] + y[ix, iν - 1, 2] - 2 * y[ix, iν, 2]) / Δν[iν]^2
   pνν = (y[ix, iν + 1, 3] + y[ix, iν - 1, 3] - 2 * y[ix, iν, 3]) / Δν[iν]^2
-  pAxν = ((y[ix, iν, 1] - y[ix, iν + indν2, 1]) / Δν[iν] - (y[ix - 1, iν, 1] - y[ix - 1, iν - 1, 1]) / Δν[iν]) / Δx[ix]
-  pBxν = ((y[ix, iν, 2] - y[ix, iν - 1, 2]) / Δν[iν] - (y[ix - 1, iν, 2] - y[ix - 1, iν - 1, 2]) / Δν[iν]) / Δx[ix]
-  pxν = ((y[ix, iν, 3] - y[ix, iν - 1, 3]) / Δν[iν] - (y[ix - 1, iν, 3] - y[ix + indx2, iν - 1, 3]) / Δν[iν]) / Δx[ix]
-  return (pA, pAx, pAν, pAxx, pAxν, pAνν, pB, pBx, pBν, pBxx, pBxν, pBνν, p, px, pν, pxx, pxν, pνν)
+  pAxν = (y[ix + 1, iν + 1, 1] - y[ix + 1, iν - 1, 1] - y[ix - 1, iν + 1, 1] + y[ix - 1, iν - 1, 1]) / (4 * Δν[iν] * Δx[ix])
+  pBxν = (y[ix + 1, iν + 1, 2] - y[ix + 1, iν - 1, 2] - y[ix - 1, iν + 1, 2] + y[ix - 1, iν - 1, 2]) / (4 * Δν[iν] * Δx[ix])
+  pxν = (y[ix + 1, iν + 1, 3] - y[ix + 1, iν - 1, 3] - y[ix - 1, iν + 1, 3] + y[ix - 1, iν - 1, 3]) / (4 * Δν[iν] * Δx[ix])
+  return pA, pAx, pAν, pAxx, pAxν, pAνν, pB, pBx, pBν, pBxx, pBxν, pBνν, p, px, pν, pxx, pxν, pνν
 end
 
 @inline function pde(ap::DiTellaModel, gridi, functionsi)
@@ -91,16 +89,15 @@ end
   σA = κ / γ + (1 - γ) / (γ * (ψ - 1)) * σpA
   νA = κν / γ
   σB = κ / γ + (1 - γ) / (γ * (ψ - 1)) * σpB
-  νB = zero(typeof(νA))
 
-  μX = x * (1 - x) * (σA * κ + νA * κν - 1 / pA - τ - (σB * κ + νB * κν -  1 / pB) - (σA - σB) * (σ + σp))
+  μX = x * (1 - x) * (σA * κ + νA * κν - 1 / pA - τ - (σB * κ -  1 / pB) - (σA - σB) * (σ + σp))
   μpA = pAx / pA * μX + pAν / pA * μν + 0.5 * pAxx / pA * σX^2 + 0.5 * pAνν / pA * σν^2 + pAxν / pA * σX * σν
   μpB = pBx / pB * μX + pBν / pB * μν + 0.5 * pBxx / pB * σX^2 + 0.5 * pBνν / pB * σν^2 + pBxν / pB * σX * σν
   μp = px / p * μX + pν / p * μν + 0.5 * pxx / p * σX^2 + 0.5 * pνν / p * σν^2 + pxν / p * σX * σν
 
   r = (1 - i) / p + g + μp + σ * σp - κ * (σ + σp) - γ / x * (ϕ * ν)^2
   out1 = pA * (1 / pA  + (ψ - 1) * τ / (1 - γ) * ((pA / pB)^((1 - γ) / (1 - ψ)) - 1) - ψ * ρ + (ψ - 1) * (r + κ * σA + κν * νA) + μpA - (ψ - 1) * γ / 2 * (σA^2 + νA^2) + (2 - ψ - γ) / (2 * (ψ - 1)) * σpA^2 + (1 - γ) * σpA * σA)
-  out2 = pB * (1 / pB - ψ * ρ + (ψ - 1) * (r + κ * σB + κν * νB) + μpB - (ψ - 1) * γ / 2 * (σB^2 + νB^2) + (2 - ψ - γ) / (2 * (ψ - 1)) * σpB^2 + (1 - γ) * σpB * σB)
+  out2 = pB * (1 / pB - ψ * ρ + (ψ - 1) * (r + κ * σB) + μpB - (ψ - 1) * γ / 2 * σB^2 + (2 - ψ - γ) / (2 * (ψ - 1)) * σpB^2 + (1 - γ) * σpB * σB)
   out3 = p * ((1 - i) / p - x / pA - (1 - x) / pB)
   return (out1, out2, out3), (μX, μν), (:p => p, :pA => pA, :pB => pB, :κ => κ, :r => r, :μX => μX, :σX => σX)
 end
