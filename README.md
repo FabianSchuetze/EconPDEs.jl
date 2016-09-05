@@ -24,26 +24,10 @@ The underlying algorithm is explained in details [here](https://github.com/matth
  - The option `autodiff` (default to `true`) specifies that the Jacobian is evaluated using automatic differentiation.
 
 
-# Models
+# Asset Pricing Models
 I solve several models to show how `Ψct` works. Models are coded in the folder `src/models`. 
 
 Open an issue or send me an email if you spot mistakes. Pull requests are welcome.
-
-
-### Wang Wang Yang (2016)
-Consumption - saving problem with idiosyncratic income risk
-```julia
-using EconPDEs
-ap = WangWangYangModel()
-grid = StateGrid(ap)
-y0 = initialize(ap, grid)
-result, distance = fullsolve(ap, grid, y0)
-
-# plot results
-using Plots
-plotly()
-plot(grid[:w], result[:p])
-```
 
 ### Campbell Cochrane (1999)
 Asset pricing model with time varying habit
@@ -110,3 +94,22 @@ using Plots
 plotly()
 surface(grid[:x], grid[:ν], result[:p])
 ```
+
+
+# Macro Models
+
+### Wang Wang Yang (2016)
+Consumption - saving problem with idiosyncratic income risk
+```julia
+using EconPDEs
+ap = WangWangYangModel()
+grid = StateGrid(ap)
+y0 = initialize(ap, grid)
+result, distance = fullsolve(ap, grid, y0)
+
+# plot results
+using Plots
+plotly()
+plot(grid[:w], result[:p])
+```
+

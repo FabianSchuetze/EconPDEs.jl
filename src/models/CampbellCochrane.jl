@@ -24,12 +24,12 @@ function CampbellCochraneModel(;μ = 0.0189, σ = 0.015, γ = 2.0, ρ = 0.116, �
     CampbellCochraneModel(μ, σ, γ, ρ, κs)
 end
 
-function StateGrid(m::CampbellCochraneModel; sn = 1000)
+function StateGrid(m::CampbellCochraneModel; smin = -100.0, sn = 1000)
     μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs 
     Sbar = σ * sqrt(γ / κs)
     sbar = log(Sbar)
     smax = sbar + 0.5 * (1 - Sbar^2)
-    StateGrid(s = linspace(-100.0, smax, sn))
+    StateGrid(s = linspace(smin, smax, sn))
 end
 
 function initialize(m::CampbellCochraneModel, grid::StateGrid)
