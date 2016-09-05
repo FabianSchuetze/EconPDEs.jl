@@ -23,19 +23,19 @@ function DiTellaModel(;γ = 5.0, ψ = 1.5, ρ = 0.05, τ = 0.4, A = 200.0, σ = 
   DiTellaModel(γ, ψ, ρ, τ, A, σ, ϕ, νbar, κν, σνbar)
 end
 
-function StateGrid(ap::DiTellaModel; xn = 80, νn = 5)
-  γ = ap.γ ; ψ = ap.ψ ; ρ = ap.ρ ; τ = ap.τ ; A = ap.A ; σ = ap.σ ; ϕ = ap.ϕ ; νbar = ap.νbar ; κν = ap.κν ; σνbar = ap.σνbar
+function StateGrid(m::DiTellaModel; xn = 80, νn = 5)
+  γ = m.γ ; ψ = m.ψ ; ρ = m.ρ ; τ = m.τ ; A = m.A ; σ = m.σ ; ϕ = m.ϕ ; νbar = m.νbar ; κν = m.κν ; σνbar = m.σνbar
   distribution = Gamma(2 * κν * νbar / σνbar^2, σνbar^2 / (2 * κν))
   νmin = quantile(distribution, 0.001)
   νmax = quantile(distribution, 0.999)
   StateGrid(x = linspace(0.01, 1.0, xn), ν = linspace(νmin, νmax, νn))
 end
 
-function initialize(apm::DiTellaModel, grid::StateGrid)
+function initialize(m::DiTellaModel, grid::StateGrid)
     fill(1.0, size(grid)..., 3)
 end
 
-@inline function derive(ap::DiTellaModel, statespace::StateGrid, y::ReflectingArray, ituple, drifti = (0.0, 0.0))
+@inline function derive(m::DiTellaModel, statespace::StateGrid, y::ReflectingArray, ituple, drifti = (0.0, 0.0))
   ix, iν = ituple[1], ituple[2]
   μX, μν = drifti
   Δx, Δν = statespace.Δx
@@ -72,10 +72,10 @@ end
   return pA, pAx, pAν, pAxx, pAxν, pAνν, pB, pBx, pBν, pBxx, pBxν, pBνν, p, px, pν, pxx, pxν, pνν
 end
 
-@inline function pde(ap::DiTellaModel, gridi, functionsi)
+@inline function pde(m::DiTellaModel, gridi, functionsi)
   x, ν = gridi
   pA, pAx, pAν, pAxx, pAxν, pAνν, pB, pBx, pBν, pBxx, pBxν, pBνν, p, px, pν, pxx, pxν, pνν = functionsi
-  γ = ap.γ ; ψ = ap.ψ ; ρ = ap.ρ ; τ = ap.τ ; A = ap.A ; σ = ap.σ ; ϕ = ap.ϕ ; νbar = ap.νbar ; κν = ap.κν ; σνbar = ap.σνbar
+  γ = m.γ ; ψ = m.ψ ; ρ = m.ρ ; τ = m.τ ; A = m.A ; σ = m.σ ; ϕ = m.ϕ ; νbar = m.νbar ; κν = m.κν ; σνbar = m.σνbar
   μν = κν * (νbar - ν)
   σν = σνbar * sqrt(ν)
   g = p / (2 * A)

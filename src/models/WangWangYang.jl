@@ -16,16 +16,16 @@ function WangWangYangModel(;μ = 0.01, σ = 0.1, r = 0.05, ρ = 0.055, γ = 4, �
     WangWangYangModel(μ, σ, r, ρ, γ, ψ)
 end
 
-function StateGrid(apm::WangWangYangModel; wn = 100)
+function StateGrid(m::WangWangYangModel; wn = 100)
     StateGrid(w = collect(linspace(0.0, 30.0, wn)))
 end
 
-function initialize(apm::WangWangYangModel, grid::StateGrid)
+function initialize(m::WangWangYangModel, grid::StateGrid)
     grid.x[1]
 end
 	
-function derive(apm::WangWangYangModel, stategrid::StateGrid, y::ReflectingArray, ituple, drifti = 0.0)
-    μ = apm.μ ;  σ = apm.σ ;  r = apm.r ;  ρ = apm.ρ ;  γ = apm.γ ;  ψ = apm.ψ 
+function derive(m::WangWangYangModel, stategrid::StateGrid, y::ReflectingArray, ituple, drifti = 0.0)
+    μ = m.μ ;  σ = m.σ ;  r = m.r ;  ρ = m.ρ ;  γ = m.γ ;  ψ = m.ψ 
     iw = ituple[1]
     μw = drifti
     Δw, = stategrid.Δx
@@ -56,8 +56,8 @@ function derive(apm::WangWangYangModel, stategrid::StateGrid, y::ReflectingArray
     return p, pw, pww
 end
 
-function pde(apm::WangWangYangModel, gridi, functionsi)
-    μ = apm.μ ;  σ = apm.σ ;  r = apm.r ;  ρ = apm.ρ ;  γ = apm.γ ;  ψ = apm.ψ 
+function pde(m::WangWangYangModel, gridi, functionsi)
+    μ = m.μ ;  σ = m.σ ;  r = m.r ;  ρ = m.ρ ;  γ = m.γ ;  ψ = m.ψ 
     w, = gridi
     p, pw, pww = functionsi
     m = r + ψ * (ρ - r)

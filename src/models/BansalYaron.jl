@@ -23,8 +23,8 @@ function BansalYaronModel(;μbar = 0.018, νD = 0.025, κμ = 0.3, κσ = 0.012,
     BansalYaronModel(μbar, νD, κμ, κσ, νμ, νσ, ρ, γ, ψ)
 end
 
-function StateGrid(apm::BansalYaronModel; μn = 30, σn = 30)
-    μbar = apm.μbar ; νD = apm.νD ; κμ = apm.κμ ; κσ = apm.κσ ; νμ = apm.νμ ; νσ = apm.νσ ; ρ = apm.ρ ; γ = apm.γ ; ψ = apm.ψ
+function StateGrid(m::BansalYaronModel; μn = 30, σn = 30)
+    μbar = m.μbar ; νD = m.νD ; κμ = m.κμ ; κσ = m.κσ ; νμ = m.νμ ; νσ = m.νσ ; ρ = m.ρ ; γ = m.γ ; ψ = m.ψ
 
     σ = sqrt(νσ^2 / (2 * κσ))
     σmin = max(0.01, quantile(Normal(1.0, σ), 0.001))
@@ -39,11 +39,11 @@ function StateGrid(apm::BansalYaronModel; μn = 30, σn = 30)
     StateGrid(μ = μs, σ = σs)
 end
 
-function initialize(apm::BansalYaronModel, grid::StateGrid)
+function initialize(m::BansalYaronModel, grid::StateGrid)
     fill(1.0, size(grid)...)
 end
 	
-function derive(apm::BansalYaronModel, stategrid::StateGrid, y::ReflectingArray, ituple, drifti = (0.0, 0.0))
+function derive(m::BansalYaronModel, stategrid::StateGrid, y::ReflectingArray, ituple, drifti = (0.0, 0.0))
     iμ, iσ = ituple[1], ituple[2]
     μμ, μσ = drifti
     Δμ, Δσ = stategrid.Δx
@@ -63,8 +63,8 @@ function derive(apm::BansalYaronModel, stategrid::StateGrid, y::ReflectingArray,
     return p, pμ, pσ, pμμ, pσσ
 end
 
-function pde(apm::BansalYaronModel, gridi, functionsi)
-    μbar = apm.μbar ; νD = apm.νD ; κμ = apm.κμ ; κσ = apm.κσ ; νμ = apm.νμ ; νσ = apm.νσ ; ρ = apm.ρ ; γ = apm.γ ; ψ = apm.ψ
+function pde(m::BansalYaronModel, gridi, functionsi)
+    μbar = m.μbar ; νD = m.νD ; κμ = m.κμ ; κσ = m.κσ ; νμ = m.νμ ; νσ = m.νσ ; ρ = m.ρ ; γ = m.γ ; ψ = m.ψ
     μ, σ = gridi
     p, pμ, pσ, pμμ, pσσ = functionsi
     μC = μ

@@ -45,15 +45,32 @@ plotly()
 plot(grid[:w], result[:p])
 ```
 
+### Campbell Cochrane (1999)
+Asset pricing model with time varying habit
+```julia
+using EconPDEs
+m = CampbellCochraneModel()
+grid = StateGrid(m)
+y0 = initialize(m, grid)
+result, distance = fullsolve(m, grid, y0)
+
+# plot results
+using Plots
+plotly()
+plot(exp(grid[:s]), result[:p])
+```
+
+
+
 ### Bansal Yaron (2004)
 Asset pricing model with time varying drift and volatility
 
 ```julia
 using EconPDEs
-ap = BansalYaronModel()
-grid = StateGrid(ap)
-y0 = initialize(ap, grid)
-result, distance = fullsolve(ap, grid, y0)
+m = BansalYaronModel()
+grid = StateGrid(m)
+y0 = initialize(m, grid)
+result, distance = fullsolve(m, grid, y0)
 
 # plot results
 using Plots
@@ -65,10 +82,10 @@ surface(grid[:μ], grid[:σ], result[:p])
 Asset pricing model with heterogeneous agents
 ```julia
 using EconPDEs
-ap = GarleanuPanageasModel()
-grid = StateGrid(ap)
-y0 = initialize(ap, grid)
-result, distance = fullsolve(ap, grid, y0)
+m = GarleanuPanageasModel()
+grid = StateGrid(m)
+y0 = initialize(m, grid)
+result, distance = fullsolve(m, grid, y0)
 
 # plot results
 using Plots
@@ -81,12 +98,12 @@ Asset pricing model with heterogeneous agents and time varying volatility
 
 ```julia
 using EconPDEs
-ap = DiTellaModel()
-grid = StateGrid(ap)
-y0 = initialize(ap, grid)
+m = DiTellaModel()
+grid = StateGrid(m)
+y0 = initialize(m, grid)
 is_algebraic = fill(false, size(y0)...)
 is_algebraic[:, :, 3] = true
-result, distance = fullsolve(ap, grid, y0, is_algebraic = is_algebraic)
+result, distance = fullsolve(m, grid, y0, is_algebraic = is_algebraic)
 
 # plot results
 using Plots

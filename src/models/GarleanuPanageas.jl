@@ -30,15 +30,15 @@ function GarleanuPanageasModel(;γA  = 1.5, ψA = 0.7, γB = 10.0, ψB = 0.05, �
   GarleanuPanageasModel(γA , ψA, γB, ψB, ρ, δ, νA, μ, σ, B1, δ1, B2, δ2, ω)
 end
 
-function StateGrid(apm::GarleanuPanageasModel; n = 200)
+function StateGrid(m::GarleanuPanageasModel; n = 200)
   StateGrid(x = linspace(0.0, 1.0, n))
 end
 
-function initialize(apm::GarleanuPanageasModel, grid::StateGrid)
+function initialize(m::GarleanuPanageasModel, grid::StateGrid)
     fill(1.0, size(grid)..., 4)
 end
 
-function derive(apm::GarleanuPanageasModel, stategrid::StateGrid, y::ReflectingArray, ituple, drifti = (0.0,))
+function derive(m::GarleanuPanageasModel, stategrid::StateGrid, y::ReflectingArray, ituple, drifti = (0.0,))
   ix = ituple[1]
   μX, = drifti
   Δx, = stategrid.Δx
@@ -65,10 +65,10 @@ function derive(apm::GarleanuPanageasModel, stategrid::StateGrid, y::ReflectingA
   return pA, pAx, pAxx, pB, pBx, pBxx, ϕ1, ϕ1x, ϕ1xx, ϕ2, ϕ2x, ϕ2xx
 end
 
-function pde(apm::GarleanuPanageasModel, gridi, functionsi)
+function pde(m::GarleanuPanageasModel, gridi, functionsi)
   x, = gridi
   pA, pAx, pAxx, pB, pBx, pBxx, ϕ1, ϕ1x, ϕ1xx, ϕ2, ϕ2x, ϕ2xx = functionsi
-  γA = apm.γA ; ψA = apm.ψA ; γB = apm.γB ; ψB = apm.ψB ; ρ = apm.ρ ; δ = apm.δ ; νA = apm.νA ; μ = apm.μ ; σ = apm.σ; B1 = apm.B1 ; δ1 = apm.δ1 ; B2 = apm.B2 ; δ2 = apm.δ2 ; ω = apm.ω ; 
+  γA = m.γA ; ψA = m.ψA ; γB = m.γB ; ψB = m.ψB ; ρ = m.ρ ; δ = m.δ ; νA = m.νA ; μ = m.μ ; σ = m.σ; B1 = m.B1 ; δ1 = m.δ1 ; B2 = m.B2 ; δ2 = m.δ2 ; ω = m.ω ; 
   Γ = 1 / (x / γA + (1 - x) / γB)
   σX = σ * x * (Γ / γA - 1) / (1 + Γ * x * (1 - x) / (γA * γB) * ((1 - γB * ψB) / (ψB - 1) * (pBx / pB) - (1 - γA * ψA) / (ψA - 1) * (pAx / pA)))
   σpA = pAx / pA * σX
