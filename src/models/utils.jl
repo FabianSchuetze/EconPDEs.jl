@@ -13,10 +13,10 @@ Base.size(y::ReflectingArray, args...) = size(y.A, args...)
 Base.eltype(y::ReflectingArray) = eltype(y.A)
 Base.eachindex(y) = eachindex(y.A)
 @generated function Base.getindex{T, N}(A::ReflectingArray{T, N}, args...)
-    Expr(:call, :getindex, :(A.A), tuple([_helper(args[i], i) for i in 1:N]...))
+    Expr(:call, :getindex, :(A.A), [_helper(args[i], i) for i in 1:N]...)
 end
 @generated function Base.setindex!{T, N}(A::ReflectingArray{T, N}, value, args...)
-    Expr(:call, :setindex!, :(A.A), :value, tuple([_helper(args[i], i) for i in 1:N]...))
+    Expr(:call, :setindex!, :(A.A), :value, [_helper(args[i], i) for i in 1:N]...)
 end
 _helper(x::Type{Int}, i) = :(clamp(args[$i], 1, size(A.A, $i)))
 _helper(x::Type{Colon}, i) = :(:)

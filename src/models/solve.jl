@@ -37,7 +37,7 @@ function compute_arrays(apm, grid, y)
     y = ReflectingArray(y)
     names = get_names(apm, grid, y)
     len = length(names)
-    A = Dict(name => zeros(size(grid)) for name in names)
+    A = Dict([Pair(name => zeros(size(grid))) for name in names])
     for i in eachindex(grid)
         functionsi = derive(apm, grid, y, i)
         outi, drifti, othersi = pde(apm, grid[i], functionsi)
@@ -105,9 +105,9 @@ function simulate(grid, a, shocks; dt = 1.0, x0 = sum(grid.x[1] .* stationary_di
         throw("simulate does not work with multiple state variables")
     end
     # interpolate all functions
-    ai = Dict(k => interpolate(grid.x, a[k], Gridded(Linear())) for k in keys(a))
+    @compat ai = Dict([Pair(k => interpolate(grid.x, a[k], Gridded(Linear()))) for k in keys(a)])
     y = zeros(shocks)
-    aT = Dict(k => zeros(shocks) for k in keys(a))
+    @compat aT = Dict([Pair(k => zeros(shocks)) for k in keys(a)])
 
     μname = Symbol(:μ, grid.name[1])
     σname = Symbol(:σ, grid.name[1])
