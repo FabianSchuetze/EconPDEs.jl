@@ -44,6 +44,14 @@ plotly()
 plot(exp(grid[:s]), result[:p])
 ```
 
+Wachter (2005) calibration:
+```julia
+m = CampbellCochraneModel(μ = 0.022, σ = 0.0086, γ = 2.0, ρ = 0.073, κs = 0.116, b = 0.011 * 4)
+grid = StateGrid(m)
+y0 = initialize(m, grid)
+result, distance = fullsolve(m, grid, y0)
+```
+
 
 
 ### Bansal Yaron (2004)
