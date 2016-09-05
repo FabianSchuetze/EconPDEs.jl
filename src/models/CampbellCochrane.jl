@@ -54,7 +54,7 @@ function derive(m::CampbellCochraneModel, stategrid::StateGrid, y::ReflectingArr
     else
         ps = (y[is] - y[is - 1]) / Δsm[is]
     end
-    pss = (y[is + 1] + y[is - 1] - 2 * y[is]) / Δs[is]^2
+    pss = (Δsm[is] * y[is + 1] + Δsp[is] * y[is - 1] - 2 * Δs[is] * y[is]) / (Δs[is] * Δsm[is] * Δsp[is])
     return p, ps, pss
 end
 
@@ -62,16 +62,19 @@ function pde(m::CampbellCochraneModel, gridi, functionsi)
     μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
     s, = gridi
     p, ps, pss = functionsi
+    # evolution state variable
     Sbar = σ * sqrt(γ / (κs - b / γ))
     sbar = log(Sbar)
     μs = - κs * (s - sbar)
     λ = 1 / Sbar * sqrt(1 - 2 * (s - sbar)) - 1
     σs = λ * σ
+    # sdf
     r = ρ + γ * μ - (γ * κs - b) / 2 + b * (sbar - s)
     κ = γ * (σ + σs)
+    # wealth / consumption
     σp = ps / p * σs
     μp = ps / p * μs + 0.5 * pss / p * σs^2
     out = p * (1 / p + μ + μp + σp * σ - r - κ * (σ + σp))
-    return out, μs, (:p => p, :κ => κ, :λ => λ, :r => r, :σp => σp)
+    return out, μs, (:p => p, :κ => κ, :λ => λ, :r => r, :σp => σp, :μs => μs, :σs => σs)
 end
 
