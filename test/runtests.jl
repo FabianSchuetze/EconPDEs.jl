@@ -2,7 +2,7 @@ using EconPDEs, Base.Test
 
 
 m = CampbellCochraneModel()
-grid = StateGrid(m; n = 20)
+grid = StateGrid(m; n = 1000)
 y0 = initialize(m, grid)
 result, distance = fullsolve(m, grid, y0)
 @test distance <= 1e-5
