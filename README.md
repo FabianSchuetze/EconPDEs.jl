@@ -73,7 +73,7 @@ surface(grid[:μ], grid[:σ], result[:p])
 Bansal, Kiku, Yaron (2009) calibration
 ```julia
 using EconPDEs
-m = BansalYaronModel()
+m = BansalYaronModel(μbar = 0.018, νD = 0.025, κμ = 0.3, κσ = 0.012, νμ = 0.0114, νσ = 0.189, ρ = 0.0132, γ = 7.5, ψ = 1.5)
 grid = StateGrid(m)
 y0 = initialize(m, grid)
 result, distance = fullsolve(m, grid, y0)
