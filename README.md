@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/matthieugomez/EconPDEs.jl.svg?branch=master)](https://travis-ci.org/matthieugomez/EconPDEs.jl)
+
 # Install
 ```julia
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")

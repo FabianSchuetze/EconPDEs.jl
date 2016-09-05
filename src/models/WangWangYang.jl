@@ -16,8 +16,8 @@ function WangWangYangModel(;μ = 0.01, σ = 0.1, r = 0.05, ρ = 0.055, γ = 4, �
     WangWangYangModel(μ, σ, r, ρ, γ, ψ)
 end
 
-function StateGrid(m::WangWangYangModel; wn = 100)
-    StateGrid(w = collect(linspace(0.0, 30.0, wn)))
+function StateGrid(m::WangWangYangModel; n = 100)
+    StateGrid(w = collect(linspace(0.0, 30.0, n)))
 end
 
 function initialize(m::WangWangYangModel, grid::StateGrid)
