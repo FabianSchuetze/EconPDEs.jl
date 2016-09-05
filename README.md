@@ -70,6 +70,15 @@ plotly()
 surface(grid[:μ], grid[:σ], result[:p])
 ```
 
+Bansal, Kiku, Yaron (2009) calibration
+```julia
+using EconPDEs
+m = BansalYaronModel()
+grid = StateGrid(m)
+y0 = initialize(m, grid)
+result, distance = fullsolve(m, grid, y0)
+```
+
 ### Garleanu Panageas (2015)
 Asset pricing model with heterogeneous agents
 ```julia

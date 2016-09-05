@@ -26,14 +26,15 @@ function CampbellCochraneModel(;μ = 0.0189, σ = 0.015, γ = 2.0, ρ = 0.116, �
 end
 
 
-function StateGrid(m::CampbellCochraneModel; smin = -100.0, sn = 100)
+function StateGrid(m::CampbellCochraneModel; smin = -300.0, sn = 1000)
     μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
     Sbar = σ * sqrt(γ / (κs - b / γ))
     sbar = log(Sbar)
     smax =  sbar + 0.5 * (1 - Sbar^2)
-    s1 = linspace(smin, log(Sbar / 100), 100)
-    s2 = log(linspace(Sbar / 100, exp(smax), 100))
-    s = vcat(s1, s2[2:end])
+    # corresponds to Grid 3 in Wachter (2005)
+    shigh = log(linspace(0.0, exp(smax), div(sn, 10)))
+    slow = linspace(smin, shigh[2], sn - div(sn, 10))
+    s = vcat(slow[1:(end-1)], shigh[2:end])
     StateGrid(s = s)
 end
 

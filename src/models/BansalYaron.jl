@@ -19,7 +19,7 @@ type BansalYaronModel  <: EconPDEModel
     ψ::Float64
 end
 
-function BansalYaronModel(;μbar = 0.018, νD = 0.025, κμ = 0.3, κσ = 0.012, νμ = 0.0114, νσ = 0.189, ρ = 0.0132, γ = 7.5, ψ = 1.5)
+function BansalYaronModel(;μbar = 0.018, νD = 0.027, κμ = 0.252, κσ = 0.156, νμ = 0.0143, νσ = 0.131, ρ = 0.024, γ = 7.5, ψ = 1.5)
     BansalYaronModel(μbar, νD, κμ, κσ, νμ, νσ, ρ, γ, ψ)
 end
 
