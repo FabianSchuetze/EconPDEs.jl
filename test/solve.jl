@@ -100,29 +100,26 @@ function stationary_distribution(grid, a)
     return density 
 end
 
-function simulate(grid, a, shocks; dt = 1.0, x0 = grid.x[1][rand(Categorical(stationary_distribution(grid, a)), size(shocks, 2))])
+function simulate(grid, a, shocks; dt = 1.0, x0 = sum(grid.x[1] .* stationary_distribution(grid, a)))
     if length(grid.name) > 2
         throw("simulate does not work with multiple state variables")
     end
     # interpolate all functions
     ai = Dict([Pair(k => interpolate(grid.x, a[k], Gridded(Linear()))) for k in keys(a)])
+    y = zeros(shocks)
     aT = Dict([Pair(k => zeros(shocks)) for k in keys(a)])
-    aT[:id] = zeros(shocks)
-    aT[:t] = zeros(shocks)
-    aT[:shock] = zeros(shocks)
-    μx = Symbol(:μ, grid.name[1])
-    σx = Symbol(:σ, grid.name[1])
+
+    μname = Symbol(:μ, grid.name[1])
+    σname = Symbol(:σ, grid.name[1])
+    name = grid.name[1]
     sqrtdt = sqrt(dt)
+    xt = x0
     for id in 1:size(shocks, 2)
-        xt = x0[id]
         for t in 1:size(shocks, 1)
             for k in keys(a)
                 aT[k][t, id] = ai[k][xt]
             end
-            aT[:id][t, id] = id
-            aT[:t][t, id] = t
-            aT[:shock][t, id] = shocks[t, id]
-            xt = xt + ai[μx][xt] * dt + ai[σx][xt] * shocks[t, id] * sqrtdt
+            xt = xt + ai[μname][xt] * dt + ai[σname][xt] * shocks[t] * sqrtdt
         end
     end
     return aT

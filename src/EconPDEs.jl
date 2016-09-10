@@ -2,7 +2,7 @@ module EconPDEs
 
 
 import NLsolve: nlsolve
-import Distributions: Normal, Gamma
+import Distributions: Normal, Gamma, Categorical
 using Interpolations
 
 ##############################################################################
