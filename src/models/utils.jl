@@ -4,18 +4,17 @@
 ## Reflecting Array (i.e. 0 is 1 and N+1 is N)
 ##
 ##############################################################################
-
-type ReflectingArray{T, N}
-    A::Array{T, N}
+type ReflectingArray{P, T, N} <: AbstractArray{T, N}
+    A::P
 end
-
+ReflectingArray{T, N}(A::AbstractArray{T, N}) = ReflectingArray{typeof(A), T, N}(A)
 Base.size(y::ReflectingArray, args...) = size(y.A, args...)
-Base.eltype(y::ReflectingArray) = eltype(y.A)
+Base.eltype{P, T, N}(y::ReflectingArray{P, T, N}) = T
 Base.eachindex(y) = eachindex(y.A)
-@generated function Base.getindex{T, N}(A::ReflectingArray{T, N}, args...)
-    Expr(:call, :getindex, :(A.A), [_helper(args[i], i) for i in 1:N]...)
+@generated function Base.getindex{P, T, N}(A::ReflectingArray{P, T, N}, args...)
+    Expr(:call, getindex, :(A.A), [_helper(args[i], i) for i in 1:N]...)
 end
-@generated function Base.setindex!{T, N}(A::ReflectingArray{T, N}, value, args...)
+@generated function Base.setindex!{P, T, N}(A::ReflectingArray{P, T, N}, value, args...)
     Expr(:call, :setindex!, :(A.A), :value, [_helper(args[i], i) for i in 1:N]...)
 end
 _helper(x::Type{Int}, i) = :(clamp(args[$i], 1, size(A.A, $i)))

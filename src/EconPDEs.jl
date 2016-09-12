@@ -4,6 +4,8 @@ module EconPDEs
 import NLsolve: nlsolve
 import Distributions: Normal, Gamma, Categorical
 using Interpolations
+using Compat
+import Compat.view
 
 ##############################################################################
 ##

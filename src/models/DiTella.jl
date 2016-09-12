@@ -35,13 +35,10 @@ function initialize(m::DiTellaModel, grid::StateGrid)
     fill(1.0, size(grid)..., 3)
 end
 
-function derive(m::DiTellaModel, statespace::StateGrid, y::ReflectingArray, ituple, drifti = (0.0, 0.0))
+function derive(m::DiTellaModel, statespace::StateGrid, y, ituple, drifti = (0.0, 0.0))
   ix, iν = ituple[1], ituple[2]
   μX, μν = drifti
   Δx, Δν = statespace.Δx
-  pA = y[ix, iν, 1]
-  pB = y[ix, iν, 2]
-  p = y[ix, iν, 3]
   if μX <= 0.0
     indx1 = 0
     indx2 = -1
@@ -56,27 +53,20 @@ function derive(m::DiTellaModel, statespace::StateGrid, y::ReflectingArray, itup
     indν1 = 1
     indν2 = 0
   end
-  pAx = (y[ix + indx1, iν, 1] - y[ix + indx2, iν, 1]) / Δx[ix]
-  pBx = (y[ix + indx1, iν, 2] - y[ix + indx2, iν, 2]) / Δx[ix]
-  px = (y[ix + indx1, iν, 3] - y[ix + indx2, iν, 3]) / Δx[ix]
-  pAν = (y[ix, iν + indν1, 1] - y[ix, iν + indν2, 1]) / Δν[iν]
-  pBν = (y[ix, iν + indν1, 2] - y[ix, iν + indν2, 2]) / Δν[iν]
-  pν = (y[ix, iν + indν1, 3] - y[ix, iν + indν2, 3]) / Δν[iν]
-  pAxx = (y[ix + 1, iν, 1] + y[ix - 1, iν, 1] - 2 * y[ix, iν, 1]) / Δx[ix]^2
-  pBxx = (y[ix + 1, iν, 2] + y[ix - 1, iν, 2] - 2 * y[ix, iν, 2]) / Δx[ix]^2
-  pxx = (y[ix + 1, iν, 3] + y[ix - 1, iν, 3] - 2 * y[ix, iν, 3]) / Δx[ix]^2
-  pAνν = (y[ix, iν + 1, 1] + y[ix, iν - 1, 1] - 2 * y[ix, iν, 1]) / Δν[iν]^2
-  pBνν = (y[ix, iν + 1, 2] + y[ix, iν - 1, 2] - 2 * y[ix, iν, 2]) / Δν[iν]^2
-  pνν = (y[ix, iν + 1, 3] + y[ix, iν - 1, 3] - 2 * y[ix, iν, 3]) / Δν[iν]^2
-  pAxν = (y[ix + indx1, iν + indν1, 1] - y[ix + indx1, iν + indν2, 1] - y[ix + indx2, iν + indν1, 1] + y[ix + indx2, iν + indν2, 1]) / (Δν[iν] * Δx[ix])
-  pBxν = (y[ix + indx1, iν + indν1, 2] - y[ix + indx1, iν + indν2, 2] - y[ix + indx2, iν + indν1, 2] + y[ix + indx2, iν + indν2, 2]) / (Δν[iν] * Δx[ix])
-  pxν = (y[ix + indx1, iν + indν1, 3] - y[ix + indx1, iν + indν2, 3] - y[ix + indx2, iν + indν1, 3] + y[ix + indx2, iν + indν2, 3]) / (Δν[iν] * Δx[ix])
-  return pA, pAx, pAν, pAxx, pAxν, pAνν, pB, pBx, pBν, pBxx, pBxν, pBνν, p, px, pν, pxx, pxν, pνν
+  p = y[ix, iν]
+  px = (y[ix + indx1, iν] - y[ix + indx2, iν]) / Δx[ix]
+  pν = (y[ix, iν + indν1] - y[ix, iν + indν2]) / Δν[iν]
+  pxx = (y[ix + 1, iν] + y[ix - 1, iν] - 2 * y[ix, iν]) / Δx[ix]^2
+  pνν = (y[ix, iν + 1] + y[ix, iν - 1] - 2 * y[ix, iν]) / Δν[iν]^2
+  pxν = (y[ix + indx1, iν + indν1] - y[ix + indx1, iν + indν2] - y[ix + indx2, iν + indν1] + y[ix + indx2, iν + indν2]) / (Δν[iν] * Δx[ix])
+  return p, px, pν, pxx, pxν, pνν
 end
 
 function pde(m::DiTellaModel, gridi, functionsi)
   x, ν = gridi
-  pA, pAx, pAν, pAxx, pAxν, pAνν, pB, pBx, pBν, pBxx, pBxν, pBνν, p, px, pν, pxx, pxν, pνν = functionsi
+  pA, pAx, pAν, pAxx, pAxν, pAνν = functionsi[1]
+  pB, pBx, pBν, pBxx, pBxν, pBνν = functionsi[2]
+  p, px, pν, pxx, pxν, pνν = functionsi[3]
   γ = m.γ ; ψ = m.ψ ; ρ = m.ρ ; τ = m.τ ; A = m.A ; σ = m.σ ; ϕ = m.ϕ ; νbar = m.νbar ; κν = m.κν ; σνbar = m.σνbar
   μν = κν * (νbar - ν)
   σν = σνbar * sqrt(ν)

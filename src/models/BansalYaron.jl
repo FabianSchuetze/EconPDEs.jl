@@ -58,8 +58,8 @@ function derive(m::BansalYaronModel, stategrid::StateGrid, y::ReflectingArray, i
     else
         pσ = (y[iμ, iσ] - y[iμ, iσ - 1]) / Δσ[iσ]
     end
-    pμμ =  (y[iμ + 1, iσ] + y[iμ - 1, iσ] - 2 * y[iμ, iσ]) / Δμ[iμ]^2
-    pσσ =  (y[iμ, iσ + 1] + y[iμ, iσ - 1] - 2 * y[iμ, iσ]) / Δσ[iσ]^2
+    pμμ = (y[iμ + 1, iσ] + y[iμ - 1, iσ] - 2 * y[iμ, iσ]) / Δμ[iμ]^2
+    pσσ = (y[iμ, iσ + 1] + y[iμ, iσ - 1] - 2 * y[iμ, iσ]) / Δσ[iσ]^2
     return p, pμ, pσ, pμμ, pσσ
 end
 

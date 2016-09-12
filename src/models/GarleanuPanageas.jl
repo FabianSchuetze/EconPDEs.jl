@@ -42,32 +42,22 @@ function derive(m::GarleanuPanageasModel, stategrid::StateGrid, y::ReflectingArr
   ix = ituple[1]
   μX, = drifti
   Δx, = stategrid.Δx
-
-  pA = y[ix, 1]
-  pB = y[ix, 2]
-  ϕ1 = y[ix, 3]
-  ϕ2 = y[ix, 4]
+  p = y[ix]
   if μX <= 0.0
-    pAx = (y[ix, 1] - y[ix - 1, 1]) / Δx[ix]
-    pBx = (y[ix, 2] - y[ix - 1, 2]) / Δx[ix]
-    ϕ1x = (y[ix, 3] - y[ix - 1, 3]) / Δx[ix]
-    ϕ2x = (y[ix, 4] - y[ix - 1, 4]) / Δx[ix] 
+    px = (y[ix] - y[ix - 1]) / Δx[ix]
   else
-    pAx = (y[ix + 1, 1] - y[ix, 1]) / Δx[ix]
-    pBx = (y[ix + 1, 2] - y[ix, 2]) / Δx[ix]
-    ϕ1x = (y[ix + 1, 3] - y[ix, 3]) / Δx[ix]
-    ϕ2x = (y[ix + 1, 4] - y[ix, 4]) / Δx[ix]
+    px = (y[ix + 1] - y[ix]) / Δx[ix]
   end
-  pAxx = (y[ix + 1, 1] + y[ix - 1, 1] - 2 * y[ix, 1]) / Δx[ix]^2
-  pBxx = (y[ix + 1, 2] + y[ix - 1, 2] - 2 * y[ix, 2]) / Δx[ix]^2
-  ϕ1xx = (y[ix + 1, 3] + y[ix - 1, 3] - 2 * y[ix, 3]) / Δx[ix]^2
-  ϕ2xx = (y[ix + 1, 4] + y[ix - 1, 4] - 2 * y[ix, 4]) / Δx[ix]^2
-  return pA, pAx, pAxx, pB, pBx, pBxx, ϕ1, ϕ1x, ϕ1xx, ϕ2, ϕ2x, ϕ2xx
+  pxx = (y[ix + 1] + y[ix - 1] - 2 * y[ix]) / Δx[ix]^2
+  return p, px, pxx
 end
 
 function pde(m::GarleanuPanageasModel, gridi, functionsi)
   x, = gridi
-  pA, pAx, pAxx, pB, pBx, pBxx, ϕ1, ϕ1x, ϕ1xx, ϕ2, ϕ2x, ϕ2xx = functionsi
+  pA, pAx, pAxx = functionsi[1]
+  pB, pBx, pBxx = functionsi[2]
+  ϕ1, ϕ1x, ϕ1xx = functionsi[3]
+  ϕ2, ϕ2x, ϕ2xx = functionsi[4]
   γA = m.γA ; ψA = m.ψA ; γB = m.γB ; ψB = m.ψB ; ρ = m.ρ ; δ = m.δ ; νA = m.νA ; μ = m.μ ; σ = m.σ; B1 = m.B1 ; δ1 = m.δ1 ; B2 = m.B2 ; δ2 = m.δ2 ; ω = m.ω ; 
   Γ = 1 / (x / γA + (1 - x) / γB)
 
