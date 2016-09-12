@@ -8,8 +8,6 @@
 ##
 ##############################################################################
 
-
-
 abstract EconPDEModel
 
 function hjb!{N1}(apm::EconPDEModel, grid::StateGrid{N1}, y::Array, ydot::Array)
@@ -31,20 +29,22 @@ function hjb!{N1, N, T}(apm::EconPDEModel, grid::StateGrid{N1}, fy::NTuple{N, T}
 end
 
 @generated function derive_{N1, N, T}(apm::EconPDEModel, grid::StateGrid{N1}, fy::NTuple{N, T}, args...)
-    if N == 1
-        :(derive(apm, grid, fy[1], args...))
-    else
-        Expr(:call, :tuple, [:(derive(apm, grid, fy[$k], args...)) for k in 1:N]...)
-    end
+    Expr(:call, :tuple, [:(derive(apm, grid, fy[$k], args...)) for k in 1:N]...)
 end
-
-
 
 @generated function _setindex!{N, T}(ydot, outi::NTuple{N, T}, i)
     Expr(:block, [:(setindex!(ydot, outi[$k], i, $k)) for k in 1:N]...)
 end
 _setindex!(ydot, outi, i) = setindex!(ydot, outi, i)
 
+function solve(apm::EconPDEModel, grid::StateGrid, y0; kwargs...)
+    Ψtc((y, ydot) -> hjb!(apm, grid, y, ydot), y0; kwargs...)
+end
+##############################################################################
+##
+## Full solve (i.e. comptue all quantities)
+## 
+##############################################################################
 
 function get_names{N, T}(apm, grid, fy::NTuple{N, T})
     i = start(eachindex(grid))
@@ -70,11 +70,6 @@ function compute_arrays{N1}(apm, grid::StateGrid{N1}, y)
         end
     end
     return A
-end
-
-
-function solve(apm::EconPDEModel, grid::StateGrid, y0; kwargs...)
-    Ψtc((y, ydot) -> hjb!(apm, grid, y, ydot), y0; kwargs...)
 end
 
 function fullsolve(apm::EconPDEModel, grid::StateGrid, y0; kwargs...)
@@ -122,7 +117,7 @@ function stationary_distribution(grid, a)
     return density 
 end
 
-function simulate(grid, a, shocks; dt = 1.0, x0 = grid.x[1][rand(Categorical(stationary_distribution(grid, a)), size(shocks, 2))])
+function simulate(grid, a, shocks; dt = 1 / 12, x0 = grid.x[1][rand(Categorical(stationary_distribution(grid, a)), size(shocks, 2))])
     if length(grid.name) > 2
         throw("simulate does not work with multiple state variables")
     end

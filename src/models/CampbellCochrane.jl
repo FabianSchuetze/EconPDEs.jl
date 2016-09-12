@@ -61,7 +61,7 @@ end
 function pde(m::CampbellCochraneModel, gridi, functionsi)
     μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
     s, = gridi
-    p, ps, pss = functionsi
+    p, ps, pss = functionsi[1]
     # evolution state variable
     Sbar = σ * sqrt(γ / (κs - b / γ))
     sbar = log(Sbar)

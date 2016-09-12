@@ -66,7 +66,7 @@ end
 function pde(m::BansalYaronModel, gridi, functionsi)
     μbar = m.μbar ; νD = m.νD ; κμ = m.κμ ; κσ = m.κσ ; νμ = m.νμ ; νσ = m.νσ ; ρ = m.ρ ; γ = m.γ ; ψ = m.ψ
     μ, σ = gridi
-    p, pμ, pσ, pμμ, pσσ = functionsi
+    p, pμ, pσ, pμμ, pσσ = functionsi[1]
     μC = μ
     σC = νD * sqrt(σ)
     μμ = κμ * (μbar - μ)

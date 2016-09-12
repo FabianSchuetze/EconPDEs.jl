@@ -59,7 +59,7 @@ end
 function pde(m::WangWangYangModel, gridi, functionsi)
     μ = m.μ ;  σ = m.σ ;  r = m.r ;  ρ = m.ρ ;  γ = m.γ ;  ψ = m.ψ 
     w, = gridi
-    p, pw, pww = functionsi
+    p, pw, pww = functionsi[1]
     m = r + ψ * (ρ - r)
     c = m * p * pw^(-ψ)
     out = ((m * pw^(1 - ψ) - ψ * ρ) / (ψ - 1) + μ - γ * σ^2 / 2) * p + ((r - μ + γ * σ^2) * w + 1) * pw + σ^2 * w^2 / 2  * (pww - γ * pw^2 / p)
