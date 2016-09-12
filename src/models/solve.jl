@@ -14,52 +14,56 @@ abstract EconPDEModel
 
 function hjb!{N1}(apm::EconPDEModel, grid::StateGrid{N1}, y::Array, ydot::Array)
     N = div(length(y), prod(size(grid)))
-    colontuple = ((Colon() for i in 1:N1)...)
-    fy = ((ReflectingArray(view(y, colontuple..., i)) for i in 1:N)...)
+    colontuple = ([Colon() for i in 1:N1]...)
+    fy = ([ReflectingArray(view(y, colontuple..., i)) for i in 1:N]...)
     hjb!(apm, grid, fy, ydot)
 end
 
-@generated function hjb!{N1, N, T}(apm::EconPDEModel, grid::StateGrid{N1}, fy::NTuple{N, T}, ydot::Array)
-    if N == 1
-        exp1 = :(derive(apm, grid, fy[1], i))
-        exp2 = :(derive(apm, grid, fy[1], i, drifti))
-    else
-        exp1 = Expr(:call, :tuple, (:(derive(apm, grid, fy[$k], i)) for k in 1:N)...)
-        exp2 = Expr(:call, :tuple, (:(derive(apm, grid, fy[$k], i, drifti)) for k in 1:N)...)
+function hjb!{N1, N, T}(apm::EconPDEModel, grid::StateGrid{N1}, fy::NTuple{N, T}, ydot::Array)
+    for i in eachindex(grid)
+        functionsi = derive_(apm, grid, fy, i)
+        outi, drifti, othersi = pde(apm, grid[i], functionsi)
+        functionsi = derive_(apm, grid, fy, i, drifti)
+        outi, drifti, othersi = pde(apm, grid[i], functionsi)
+        _setindex!(ydot, outi, i)
     end
-    exp3 = Expr(:block, (:(setindex!(ydot, outi[$k], i, $k)) for k in 1:N)...)
-    quote
-        for i in eachindex(grid)
-            outi, drifti, othersi = pde(apm, grid[i], simplify($exp1))
-            outi, drifti, othersi = pde(apm, grid[i], simplify($exp2))
-            $exp3
-        end
-        return ydot
+    return ydot
+end
+
+@generated function derive_{N1, N, T}(apm::EconPDEModel, grid::StateGrid{N1}, fy::NTuple{N, T}, args...)
+    if N == 1
+        :(derive(apm, grid, fy[1], args...))
+    else
+        Expr(:call, :tuple, [:(derive(apm, grid, fy[$k], args...)) for k in 1:N]...)
     end
 end
 
-simplify{T}(x::NTuple{1, T}) = x[1]
-simplify{N, T}(x::NTuple{N, T}) = x
+
+
+@generated function _setindex!{N, T}(ydot, outi::NTuple{N, T}, i)
+    Expr(:block, [:(setindex!(ydot, outi[$k], i, $k)) for k in 1:N]...)
+end
+_setindex!(ydot, outi, i) = setindex!(ydot, outi, i)
 
 
 function get_names{N, T}(apm, grid, fy::NTuple{N, T})
     i = start(eachindex(grid))
-    functionsi = simplify(((derive(apm, grid, fy[k], i) for k in 1:N)...))
+    functionsi = derive_(apm, grid, fy, i)
     outi, drifti, othersi = pde(apm, grid[i], functionsi)
     collect(map(first, othersi))
 end
 
 function compute_arrays{N1}(apm, grid::StateGrid{N1}, y)
     N = div(length(y), prod(size(grid)))
-    colontuple = ((Colon() for i in 1:N1)...)
-    fy = ((ReflectingArray(view(y, colontuple..., i)) for i in 1:N)...)
+    colontuple = ([Colon() for i in 1:N1]...)
+    fy = ([ReflectingArray(view(y, colontuple..., i)) for i in 1:N]...)
     names = get_names(apm, grid, fy)
     len = length(names)
     A = Dict([Pair(name => zeros(size(grid))) for name in names])
     for i in eachindex(grid)
-        functionsi = simplify(((derive(apm, grid, fy[k], i) for k in 1:N)...))
+        functionsi =  derive_(apm, grid, fy, i)
         outi, drifti, othersi = pde(apm, grid[i], functionsi)
-        functionsi = simplify(((derive(apm, grid, fy[k], i) for k in 1:N)...))
+        functionsi =  derive_(apm, grid, fy, i, drifti)
         outi, drifti, othersi = pde(apm, grid[i], functionsi)
         for j in 1:len
             A[first(othersi[j])][i] = last(othersi[j])
