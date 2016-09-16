@@ -1,8 +1,7 @@
 ##############################################################################
 ##
 ## A EconPDE model must define:
-## 1. A function derive
-## 2. A function pde
+## A function pde
 ##
 ## See examples in the folder /models
 ##
@@ -19,20 +18,29 @@ end
 
 function hjb!{N1, N, T}(apm::EconPDEModel, grid::StateGrid{N1}, fy::NTuple{N, T}, ydot::Array)
     for i in eachindex(grid)
-        functionsi = derive_(apm, grid, fy, i)
-        outi, drifti, othersi = pde(apm, grid[i], functionsi)
-        functionsi = derive_(apm, grid, fy, i, drifti)
-        outi, drifti, othersi = pde(apm, grid[i], functionsi)
+        outi, drifti, othersi = pde(apm, grid, fy, i)
+        outi, drifti, othersi = pde(apm, grid, fy, i, drifti)
         _setindex!(ydot, outi, i)
     end
     return ydot
 end
 
-@generated function derive_{N1, N, T}(apm::EconPDEModel, grid::StateGrid{N1}, fy::NTuple{N, T}, args...)
-    Expr(:call, :tuple, [:(derive(apm, grid, fy[$k], args...)) for k in 1:N]...)
+@generated function _setindex!{N, T}(ydot, outi::NTuple{N, T}, i)
+    Expr(:block, [:(setindex!(ydot, outi[$k], i, $k)) for k in 1:N]...)
 end
+_setindex!(ydot, outi, i) = setindex!(ydot, outi, i)
 
-function derive(apm::EconPDEModel, grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drift = (0.0,))
+function solve(apm::EconPDEModel, grid::StateGrid, y0; kwargs...)
+    Ψtc((y, ydot) -> hjb!(apm, grid, y, ydot), y0; kwargs...)
+end
+##############################################################################
+##
+## Derive default
+##
+##############################################################################
+
+
+function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drift = (0.0,))
   is = ituple[1]
   μs = drift[1]
   Δs, = grid.Δx
@@ -48,7 +56,7 @@ function derive(apm::EconPDEModel, grid::StateGrid, y::ReflectingArray, ituple::
   return p, ps, pss
 end
 
-function derive(apm::EconPDEModel, grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{2}, drift = (0.0, 0.0))
+function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{2}, drift = (0.0, 0.0))
     iμ, iσ = ituple[1], ituple[2]
     ix, iν = ituple[1], ituple[2]
     μX, μν = drift
@@ -75,15 +83,6 @@ function derive(apm::EconPDEModel, grid::StateGrid, y::ReflectingArray, ituple::
     pxν = (y[ix + indx1, iν + indν1] - y[ix + indx1, iν + indν2] - y[ix + indx2, iν + indν1] + y[ix + indx2, iν + indν2]) / (Δν[iν] * Δx[ix])
     return p, px, pν, pxx, pxν, pνν
 end
-
-@generated function _setindex!{N, T}(ydot, outi::NTuple{N, T}, i)
-    Expr(:block, [:(setindex!(ydot, outi[$k], i, $k)) for k in 1:N]...)
-end
-_setindex!(ydot, outi, i) = setindex!(ydot, outi, i)
-
-function solve(apm::EconPDEModel, grid::StateGrid, y0; kwargs...)
-    Ψtc((y, ydot) -> hjb!(apm, grid, y, ydot), y0; kwargs...)
-end
 ##############################################################################
 ##
 ## Full solve (i.e. comptue all quantities)
@@ -92,8 +91,7 @@ end
 
 function get_info{N, T}(apm, grid, fy::NTuple{N, T})
     i = start(eachindex(grid))
-    functionsi = derive_(apm, grid, fy, i)
-    outi, drifti, othersi = pde(apm, grid[i], functionsi)
+    outi, drifti, othersi = pde(apm, grid, fy, i)
     collect(map(first, othersi)), collect(map(typeof, map(last, othersi)))
 end
 
@@ -105,10 +103,8 @@ function compute_arrays{N1}(apm, grid::StateGrid{N1}, y)
     len = length(names)
     A = Dict([Pair(names[i] => Array(types[i], size(grid))) for i in 1:length(names)])
     for i in eachindex(grid)
-        functionsi =  derive_(apm, grid, fy, i)
-        outi, drifti, othersi = pde(apm, grid[i], functionsi)
-        functionsi =  derive_(apm, grid, fy, i, drifti)
-        outi, drifti, othersi = pde(apm, grid[i], functionsi)
+        outi, drifti, othersi = pde(apm, grid, fy, i)
+        outi, drifti, othersi = pde(apm, grid, fy, i, drifti)
         for j in 1:len
             A[first(othersi[j])][i] = last(othersi[j])
         end

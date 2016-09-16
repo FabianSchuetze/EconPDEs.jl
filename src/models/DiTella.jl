@@ -35,11 +35,11 @@ function initialize(m::DiTellaModel, grid::StateGrid)
     fill(1.0, size(grid)..., 3)
 end
 
-function pde(m::DiTellaModel, gridi, functionsi)
-  x, ν = gridi
-  pA, pAx, pAν, pAxx, pAxν, pAνν = functionsi[1]
-  pB, pBx, pBν, pBxx, pBxν, pBνν = functionsi[2]
-  p, px, pν, pxx, pxν, pνν = functionsi[3]
+function pde(m::DiTellaModel, grid, y, ituple, drift = (0.0, 0.0))
+  x, ν = grid[ituple]
+  pA, pAx, pAν, pAxx, pAxν, pAνν = derive(grid, y[1], ituple, drift)
+  pB, pBx, pBν, pBxx, pBxν, pBνν = derive(grid, y[2], ituple, drift)
+  p, px, pν, pxx, pxν, pνν = derive(grid, y[3], ituple, drift)
   γ = m.γ ; ψ = m.ψ ; ρ = m.ρ ; τ = m.τ ; A = m.A ; σ = m.σ ; ϕ = m.ϕ ; νbar = m.νbar ; κν = m.κν ; σνbar = m.σνbar
   μν = κν * (νbar - ν)
   σν = σνbar * sqrt(ν)
