@@ -1,26 +1,3 @@
-using Optim
-function rosenbrock_res(x, r)
-    r[1] = 10.0 * (x[2] - x[1]^2 )
-    r[2] =  1.0 - x[1]
-    return r
-end
-
-function rosenbrock_jac(x, j)
-    j[1, 1] = -20.0 * x[1]
-    j[1, 2] =  10.0
-    j[2, 1] =  -1.0
-    j[2, 2] =   0.0
-    return j
-end
-
-r = zeros(2)
-j = zeros(2,2)
-
-frb(x) = rosenbrock_res(x, r)
-grb(x) = rosenbrock_jac(x, j)
-
-
-result = Optim.levenberg_marquardt(frb, grb, [150.0, 150.0]; lower = [10.0, 10.0], upper = [200.0, 200.0])
 
 ##############################################################################
 ##
@@ -112,3 +89,52 @@ function Base.getindex{N}(grid::StateGrid{N}, x::Symbol)
     grid.x[find(collect(grid.name) .== x)[1]]
 end
 
+##############################################################################
+##
+## Derive default
+##
+##############################################################################
+
+function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drift = (0.0,))
+  is = ituple[1]
+  μs = drift[1]
+  Δs, = grid.Δx
+  Δsm, = grid.Δxm
+  Δsp, = grid.Δxp
+  p = y[is]
+  if μs >= 0.0
+      ps = (y[is + 1] - y[is]) / Δsp[is]
+  else
+      ps = (y[is] - y[is - 1]) / Δsm[is]
+  end
+  pss = (Δsm[is] * y[is + 1] + Δsp[is] * y[is - 1] - 2 * Δs[is] * y[is]) / (Δs[is] * Δsm[is] * Δsp[is])
+  return p, ps, pss
+end
+
+function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{2}, drift = (0.0, 0.0))
+    iμ, iσ = ituple[1], ituple[2]
+    ix, iν = ituple[1], ituple[2]
+    μX, μν = drift
+    Δx, Δν = grid.Δx
+    if μX <= 0.0
+      indx1 = 0
+      indx2 = -1
+    else
+     indx1 = 1
+     indx2 = 0
+    end
+    if μν <= 0.0
+      indν1 = 0
+      indν2 = -1
+    else
+      indν1 = 1
+      indν2 = 0
+    end
+    p = y[ix, iν]
+    px = (y[ix + indx1, iν] - y[ix + indx2, iν]) / Δx[ix]
+    pν = (y[ix, iν + indν1] - y[ix, iν + indν2]) / Δν[iν]
+    pxx = (y[ix + 1, iν] + y[ix - 1, iν] - 2 * y[ix, iν]) / Δx[ix]^2
+    pνν = (y[ix, iν + 1] + y[ix, iν - 1] - 2 * y[ix, iν]) / Δν[iν]^2
+    pxν = (y[ix + indx1, iν + indν1] - y[ix + indx1, iν + indν2] - y[ix + indx2, iν + indν1] + y[ix + indx2, iν + indν2]) / (Δν[iν] * Δx[ix])
+    return p, px, pν, pxx, pxν, pνν
+end

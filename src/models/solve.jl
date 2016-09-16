@@ -33,56 +33,7 @@ _setindex!(ydot, outi, i) = setindex!(ydot, outi, i)
 function solve(apm::EconPDEModel, grid::StateGrid, y0; kwargs...)
     Ψtc((y, ydot) -> hjb!(apm, grid, y, ydot), y0; kwargs...)
 end
-##############################################################################
-##
-## Derive default
-##
-##############################################################################
 
-
-function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drift = (0.0,))
-  is = ituple[1]
-  μs = drift[1]
-  Δs, = grid.Δx
-  Δsm, = grid.Δxm
-  Δsp, = grid.Δxp
-  p = y[is]
-  if μs >= 0.0
-      ps = (y[is + 1] - y[is]) / Δsp[is]
-  else
-      ps = (y[is] - y[is - 1]) / Δsm[is]
-  end
-  pss = (Δsm[is] * y[is + 1] + Δsp[is] * y[is - 1] - 2 * Δs[is] * y[is]) / (Δs[is] * Δsm[is] * Δsp[is])
-  return p, ps, pss
-end
-
-function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{2}, drift = (0.0, 0.0))
-    iμ, iσ = ituple[1], ituple[2]
-    ix, iν = ituple[1], ituple[2]
-    μX, μν = drift
-    Δx, Δν = grid.Δx
-    if μX <= 0.0
-      indx1 = 0
-      indx2 = -1
-    else
-     indx1 = 1
-     indx2 = 0
-    end
-    if μν <= 0.0
-      indν1 = 0
-      indν2 = -1
-    else
-      indν1 = 1
-      indν2 = 0
-    end
-    p = y[ix, iν]
-    px = (y[ix + indx1, iν] - y[ix + indx2, iν]) / Δx[ix]
-    pν = (y[ix, iν + indν1] - y[ix, iν + indν2]) / Δν[iν]
-    pxx = (y[ix + 1, iν] + y[ix - 1, iν] - 2 * y[ix, iν]) / Δx[ix]^2
-    pνν = (y[ix, iν + 1] + y[ix, iν - 1] - 2 * y[ix, iν]) / Δν[iν]^2
-    pxν = (y[ix + indx1, iν + indν1] - y[ix + indx1, iν + indν2] - y[ix + indx2, iν + indν1] + y[ix + indx2, iν + indν2]) / (Δν[iν] * Δx[ix])
-    return p, px, pν, pxx, pxν, pνν
-end
 ##############################################################################
 ##
 ## Full solve (i.e. comptue all quantities)

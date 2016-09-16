@@ -43,11 +43,10 @@ function initialize(m::BansalYaronModel, grid::StateGrid)
     fill(1.0, size(grid)...)
 end
 
-
-function pde(m::BansalYaronModel, grid, y, ituple, drift = (0.0, 0.0))
+function pde(m::BansalYaronModel, grid, y, ituple, idrift = (0.0, 0.0))
     μbar = m.μbar ; νD = m.νD ; κμ = m.κμ ; κσ = m.κσ ; νμ = m.νμ ; νσ = m.νσ ; ρ = m.ρ ; γ = m.γ ; ψ = m.ψ
     μ, σ = grid[ituple]
-    p, pμ, pσ, pμμ, pμσ, pσσ = derive(grid, y[1], ituple, drift)
+    p, pμ, pσ, pμμ, pμσ, pσσ = derive(grid, y[1], ituple, idrift)
     μC = μ
     σC = νD * sqrt(σ)
     μμ = κμ * (μbar - μ)

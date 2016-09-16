@@ -41,10 +41,10 @@ function initialize(m::CampbellCochraneModel, grid::StateGrid)
     fill(1.0, size(grid)...)
 end
 	
-function pde(m::CampbellCochraneModel, grid, y, ituple, drift = (0.0, 0.0))
+function pde(m::CampbellCochraneModel, grid, y, ituple, idrift = (0.0, 0.0))
     μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
     s, = grid[ituple]
-    p, ps, pss  = derive(grid, y[1], ituple, drift)
+    p, ps, pss  = derive(grid, y[1], ituple, idrift)
     # evolution state variable
     Sbar = σ * sqrt(γ / (κs - b / γ))
     sbar = log(Sbar)

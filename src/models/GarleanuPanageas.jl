@@ -38,12 +38,12 @@ function initialize(m::GarleanuPanageasModel, grid::StateGrid)
     fill(1.0, size(grid)..., 4)
 end
 
-function pde(m::GarleanuPanageasModel, grid, y, ituple, drift = (0.0, 0.0))
+function pde(m::GarleanuPanageasModel, grid, y, ituple, idrift = (0.0, 0.0))
   x, = grid[ituple]
-  pA, pAx, pAxx = derive(grid, y[1], ituple, drift)
-  pB, pBx, pBxx = derive(grid, y[2], ituple, drift)
-  ϕ1, ϕ1x, ϕ1xx = derive(grid, y[3], ituple, drift)
-  ϕ2, ϕ2x, ϕ2xx = derive(grid, y[4], ituple, drift)
+  pA, pAx, pAxx = derive(grid, y[1], ituple, idrift)
+  pB, pBx, pBxx = derive(grid, y[2], ituple, idrift)
+  ϕ1, ϕ1x, ϕ1xx = derive(grid, y[3], ituple, idrift)
+  ϕ2, ϕ2x, ϕ2xx = derive(grid, y[4], ituple, idrift)
   γA = m.γA ; ψA = m.ψA ; γB = m.γB ; ψB = m.ψB ; ρ = m.ρ ; δ = m.δ ; νA = m.νA ; μ = m.μ ; σ = m.σ; B1 = m.B1 ; δ1 = m.δ1 ; B2 = m.B2 ; δ2 = m.δ2 ; ω = m.ω
   Γ = 1 / (x / γA + (1 - x) / γB)
 
