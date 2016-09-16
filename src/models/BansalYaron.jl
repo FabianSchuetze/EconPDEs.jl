@@ -42,31 +42,11 @@ end
 function initialize(m::BansalYaronModel, grid::StateGrid)
     fill(1.0, size(grid)...)
 end
-	
-function derive(m::BansalYaronModel, stategrid::StateGrid, y::ReflectingArray, ituple, drifti = (0.0, 0.0))
-    iμ, iσ = ituple[1], ituple[2]
-    μμ, μσ = drifti
-    Δμ, Δσ = stategrid.Δx
-    p = y[iμ, iσ]
-    if μμ >= 0.0
-        pμ = (y[iμ + 1, iσ] - y[iμ, iσ]) / Δμ[iμ]
-    else
-        pμ = (y[iμ, iσ] - y[iμ - 1, iσ]) / Δμ[iμ]
-    end
-    if μσ >= 0.0
-        pσ = (y[iμ, iσ + 1] - y[iμ, iσ]) / Δσ[iσ]
-    else
-        pσ = (y[iμ, iσ] - y[iμ, iσ - 1]) / Δσ[iσ]
-    end
-    pμμ = (y[iμ + 1, iσ] + y[iμ - 1, iσ] - 2 * y[iμ, iσ]) / Δμ[iμ]^2
-    pσσ = (y[iμ, iσ + 1] + y[iμ, iσ - 1] - 2 * y[iμ, iσ]) / Δσ[iσ]^2
-    return p, pμ, pσ, pμμ, pσσ
-end
 
 function pde(m::BansalYaronModel, gridi, functionsi)
     μbar = m.μbar ; νD = m.νD ; κμ = m.κμ ; κσ = m.κσ ; νμ = m.νμ ; νσ = m.νσ ; ρ = m.ρ ; γ = m.γ ; ψ = m.ψ
     μ, σ = gridi
-    p, pμ, pσ, pμμ, pσσ = functionsi[1]
+    p, pμ, pσ, pμμ, pμσ, pσσ = functionsi[1]
     μC = μ
     σC = νD * sqrt(σ)
     μμ = κμ * (μbar - μ)
@@ -80,4 +60,3 @@ function pde(m::BansalYaronModel, gridi, functionsi)
     out = p * (1 / p - ρ + (1 - 1 / ψ) * (μC - 0.5 * γ * σC^2) + μp + 0.5 * (1 / ψ - γ) / (1 - 1 / ψ) * σp2)
     return out, (μμ, μσ), (:p => p,)
 end
-

@@ -38,20 +38,6 @@ function initialize(m::GarleanuPanageasModel, grid::StateGrid)
     fill(1.0, size(grid)..., 4)
 end
 
-function derive(m::GarleanuPanageasModel, stategrid::StateGrid, y::ReflectingArray, ituple, drifti = (0.0,))
-  ix = ituple[1]
-  μX, = drifti
-  Δx, = stategrid.Δx
-  p = y[ix]
-  if μX <= 0.0
-    px = (y[ix] - y[ix - 1]) / Δx[ix]
-  else
-    px = (y[ix + 1] - y[ix]) / Δx[ix]
-  end
-  pxx = (y[ix + 1] + y[ix - 1] - 2 * y[ix]) / Δx[ix]^2
-  return p, px, pxx
-end
-
 function pde(m::GarleanuPanageasModel, gridi, functionsi)
   x, = gridi
   pA, pAx, pAxx = functionsi[1]
@@ -90,7 +76,5 @@ function pde(m::GarleanuPanageasModel, gridi, functionsi)
   out4 = ϕ2 * (B2 * ω / ϕ2 + (μ - δ - δ2) + μϕ2 + σ * σϕ2 - r - κ * (σϕ2 + σ))
 
   p = x * pA + (1 - x) * pB
-  return (out1, out2, out3, out4), (μX,), (:p => p, :pA => pA, :pB => pB, :κ => κ, :r => r, :μx => μX, :σx => σX)
+  return (out1, out2, out3, out4), μX, (:p => p, :pA => pA, :pB => pB, :κ => κ, :r => r, :μx => μX, :σx => σX)
 end
-
-

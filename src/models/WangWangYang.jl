@@ -24,7 +24,7 @@ function initialize(m::WangWangYangModel, grid::StateGrid)
     grid.x[1]
 end
 	
-function derive(m::WangWangYangModel, stategrid::StateGrid, y::ReflectingArray, ituple, drifti = 0.0)
+function derive(m::WangWangYangModel, stategrid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drifti = 0.0)
     μ = m.μ ;  σ = m.σ ;  r = m.r ;  ρ = m.ρ ;  γ = m.γ ;  ψ = m.ψ 
     iw = ituple[1]
     μw = drifti

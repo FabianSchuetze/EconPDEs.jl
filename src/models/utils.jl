@@ -1,3 +1,26 @@
+using Optim
+function rosenbrock_res(x, r)
+    r[1] = 10.0 * (x[2] - x[1]^2 )
+    r[2] =  1.0 - x[1]
+    return r
+end
+
+function rosenbrock_jac(x, j)
+    j[1, 1] = -20.0 * x[1]
+    j[1, 2] =  10.0
+    j[2, 1] =  -1.0
+    j[2, 2] =   0.0
+    return j
+end
+
+r = zeros(2)
+j = zeros(2,2)
+
+frb(x) = rosenbrock_res(x, r)
+grb(x) = rosenbrock_jac(x, j)
+
+
+result = Optim.levenberg_marquardt(frb, grb, [150.0, 150.0]; lower = [10.0, 10.0], upper = [200.0, 200.0])
 
 ##############################################################################
 ##

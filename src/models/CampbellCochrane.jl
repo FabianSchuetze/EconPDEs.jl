@@ -25,7 +25,6 @@ function CampbellCochraneModel(;μ = 0.0189, σ = 0.015, γ = 2.0, ρ = 0.116, �
     CampbellCochraneModel(μ, σ, γ, ρ, κs, b)
 end
 
-
 function StateGrid(m::CampbellCochraneModel; smin = -300.0, n = 1000)
     μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
     Sbar = σ * sqrt(γ / (κs - b / γ))
@@ -42,22 +41,6 @@ function initialize(m::CampbellCochraneModel, grid::StateGrid)
     fill(1.0, size(grid)...)
 end
 	
-function derive(m::CampbellCochraneModel, stategrid::StateGrid, y::ReflectingArray, ituple, drifti = 0.0)
-    is = ituple[1]
-    μs = drifti
-    Δs, = stategrid.Δx
-    Δsm, = stategrid.Δxm
-    Δsp, = stategrid.Δxp
-    p = y[is]
-    if μs >= 0.0
-        ps = (y[is + 1] - y[is]) / Δsp[is]
-    else
-        ps = (y[is] - y[is - 1]) / Δsm[is]
-    end
-    pss = (Δsm[is] * y[is + 1] + Δsp[is] * y[is - 1] - 2 * Δs[is] * y[is]) / (Δs[is] * Δsm[is] * Δsp[is])
-    return p, ps, pss
-end
-
 function pde(m::CampbellCochraneModel, gridi, functionsi)
     μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
     s, = gridi
@@ -77,4 +60,3 @@ function pde(m::CampbellCochraneModel, gridi, functionsi)
     out = p * (1 / p + μ + μp + σp * σ - r - κ * (σ + σp))
     return out, μs, (:p => p, :κ => κ, :λ => λ, :r => r, :σp => σp, :μs => μs, :σs => σs)
 end
-

@@ -32,6 +32,50 @@ end
     Expr(:call, :tuple, [:(derive(apm, grid, fy[$k], args...)) for k in 1:N]...)
 end
 
+function derive(apm::EconPDEModel, grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drift = 0.0)
+  is = ituple[1]
+  μs = drift
+  Δs, = grid.Δx
+  Δsm, = grid.Δxm
+  Δsp, = grid.Δxp
+  p = y[is]
+  if μs >= 0.0
+      ps = (y[is + 1] - y[is]) / Δsp[is]
+  else
+      ps = (y[is] - y[is - 1]) / Δsm[is]
+  end
+  pss = (Δsm[is] * y[is + 1] + Δsp[is] * y[is - 1] - 2 * Δs[is] * y[is]) / (Δs[is] * Δsm[is] * Δsp[is])
+  return p, ps, pss
+end
+
+function derive(apm::EconPDEModel, grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{2}, drift = (0.0, 0.0))
+    iμ, iσ = ituple[1], ituple[2]
+    ix, iν = ituple[1], ituple[2]
+    μX, μν = drift
+    Δx, Δν = grid.Δx
+    if μX <= 0.0
+      indx1 = 0
+      indx2 = -1
+    else
+     indx1 = 1
+     indx2 = 0
+    end
+    if μν <= 0.0
+      indν1 = 0
+      indν2 = -1
+    else
+      indν1 = 1
+      indν2 = 0
+    end
+    p = y[ix, iν]
+    px = (y[ix + indx1, iν] - y[ix + indx2, iν]) / Δx[ix]
+    pν = (y[ix, iν + indν1] - y[ix, iν + indν2]) / Δν[iν]
+    pxx = (y[ix + 1, iν] + y[ix - 1, iν] - 2 * y[ix, iν]) / Δx[ix]^2
+    pνν = (y[ix, iν + 1] + y[ix, iν - 1] - 2 * y[ix, iν]) / Δν[iν]^2
+    pxν = (y[ix + indx1, iν + indν1] - y[ix + indx1, iν + indν2] - y[ix + indx2, iν + indν1] + y[ix + indx2, iν + indν2]) / (Δν[iν] * Δx[ix])
+    return p, px, pν, pxx, pxν, pνν
+end
+
 @generated function _setindex!{N, T}(ydot, outi::NTuple{N, T}, i)
     Expr(:block, [:(setindex!(ydot, outi[$k], i, $k)) for k in 1:N]...)
 end
@@ -46,20 +90,20 @@ end
 ## 
 ##############################################################################
 
-function get_names{N, T}(apm, grid, fy::NTuple{N, T})
+function get_info{N, T}(apm, grid, fy::NTuple{N, T})
     i = start(eachindex(grid))
     functionsi = derive_(apm, grid, fy, i)
     outi, drifti, othersi = pde(apm, grid[i], functionsi)
-    collect(map(first, othersi))
+    collect(map(first, othersi)), collect(map(typeof, map(last, othersi)))
 end
 
 function compute_arrays{N1}(apm, grid::StateGrid{N1}, y)
     N = div(length(y), prod(size(grid)))
     colontuple = ([Colon() for i in 1:N1]...)
     fy = ([ReflectingArray(view(y, colontuple..., i)) for i in 1:N]...)
-    names = get_names(apm, grid, fy)
+    names, types = get_info(apm, grid, fy)
     len = length(names)
-    A = Dict([Pair(name => zeros(size(grid))) for name in names])
+    A = Dict([Pair(names[i] => Array(types[i], size(grid))) for i in 1:length(names)])
     for i in eachindex(grid)
         functionsi =  derive_(apm, grid, fy, i)
         outi, drifti, othersi = pde(apm, grid[i], functionsi)
@@ -118,17 +162,12 @@ function stationary_distribution(grid, a)
 end
 
 function simulate(grid, a, shocks; dt = 1 / 12, x0 = grid.x[1][rand(Categorical(stationary_distribution(grid, a)), size(shocks, 2))])
-    if length(grid.name) > 2
-        throw("simulate does not work with multiple state variables")
-    end
     # interpolate all functions
     ai = Dict([Pair(k => interpolate(grid.x, a[k], Gridded(Linear()))) for k in keys(a)])
     aT = Dict([Pair(k => zeros(shocks)) for k in keys(a)])
     aT[:id] = zeros(shocks)
     aT[:t] = zeros(shocks)
     aT[:shock] = zeros(shocks)
-    μx = Symbol(:μ, grid.name[1])
-    σx = Symbol(:σ, grid.name[1])
     sqrtdt = sqrt(dt)
     for id in 1:size(shocks, 2)
         xt = x0[id]
@@ -139,7 +178,7 @@ function simulate(grid, a, shocks; dt = 1 / 12, x0 = grid.x[1][rand(Categorical(
             aT[:id][t, id] = id
             aT[:t][t, id] = t
             aT[:shock][t, id] = shocks[t, id]
-            xt = xt + ai[μx][xt] * dt + ai[σx][xt] * shocks[t, id] * sqrtdt
+            xt = xt + ai[:μx][xt] * dt + ai[:σx][xt] * shocks[t, id] * sqrtdt
         end
     end
     return aT

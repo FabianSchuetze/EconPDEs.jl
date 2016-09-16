@@ -35,33 +35,6 @@ function initialize(m::DiTellaModel, grid::StateGrid)
     fill(1.0, size(grid)..., 3)
 end
 
-function derive(m::DiTellaModel, statespace::StateGrid, y, ituple, drifti = (0.0, 0.0))
-  ix, iν = ituple[1], ituple[2]
-  μX, μν = drifti
-  Δx, Δν = statespace.Δx
-  if μX <= 0.0
-    indx1 = 0
-    indx2 = -1
-  else
-   indx1 = 1
-   indx2 = 0
-  end
-  if μν <= 0.0
-    indν1 = 0
-    indν2 = -1
-  else
-    indν1 = 1
-    indν2 = 0
-  end
-  p = y[ix, iν]
-  px = (y[ix + indx1, iν] - y[ix + indx2, iν]) / Δx[ix]
-  pν = (y[ix, iν + indν1] - y[ix, iν + indν2]) / Δν[iν]
-  pxx = (y[ix + 1, iν] + y[ix - 1, iν] - 2 * y[ix, iν]) / Δx[ix]^2
-  pνν = (y[ix, iν + 1] + y[ix, iν - 1] - 2 * y[ix, iν]) / Δν[iν]^2
-  pxν = (y[ix + indx1, iν + indν1] - y[ix + indx1, iν + indν2] - y[ix + indx2, iν + indν1] + y[ix + indx2, iν + indν2]) / (Δν[iν] * Δx[ix])
-  return p, px, pν, pxx, pxν, pνν
-end
-
 function pde(m::DiTellaModel, gridi, functionsi)
   x, ν = gridi
   pA, pAx, pAν, pAxx, pAxν, pAνν = functionsi[1]
@@ -93,4 +66,3 @@ function pde(m::DiTellaModel, gridi, functionsi)
   out3 = p * ((1 - i) / p - x / pA - (1 - x) / pB)
   return (out1, out2, out3), (μX, μν), (:p => p, :pA => pA, :pB => pB, :κ => κ, :r => r, :μX => μX, :σX => σX)
 end
-
