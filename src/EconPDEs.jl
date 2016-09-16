@@ -6,7 +6,6 @@ import Distributions: Normal, Gamma, Categorical
 using Interpolations
 using Compat
 import Compat.view
-
 ##############################################################################
 ##
 ## Load files

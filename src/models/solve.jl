@@ -18,8 +18,8 @@ end
 
 function hjb!{N1, N, T}(apm::EconPDEModel, grid::StateGrid{N1}, fy::NTuple{N, T}, ydot::Array)
     for i in eachindex(grid)
-        outi, drifti, othersi = pde(apm, grid, fy, i)
-        outi, drifti, othersi = pde(apm, grid, fy, i, drifti)
+        outi, drifti, othersi = pde(apm, grid, fy, i.I)
+        outi, drifti, othersi = pde(apm, grid, fy, i.I, drifti)
         _setindex!(ydot, outi, i)
     end
     return ydot
@@ -42,7 +42,7 @@ end
 
 function get_info{N, T}(apm, grid, fy::NTuple{N, T})
     i = start(eachindex(grid))
-    outi, drifti, othersi = pde(apm, grid, fy, i)
+    outi, drifti, othersi = pde(apm, grid, fy, i.I)
     collect(map(first, othersi)), collect(map(typeof, map(last, othersi)))
 end
 
@@ -54,8 +54,8 @@ function compute_arrays{N1}(apm, grid::StateGrid{N1}, y)
     len = length(names)
     A = Dict([Pair(names[i] => Array(types[i], size(grid))) for i in 1:length(names)])
     for i in eachindex(grid)
-        outi, drifti, othersi = pde(apm, grid, fy, i)
-        outi, drifti, othersi = pde(apm, grid, fy, i, drifti)
+        outi, drifti, othersi = pde(apm, grid, fy, i.I)
+        outi, drifti, othersi = pde(apm, grid, fy, i.I, drifti)
         for j in 1:len
             A[first(othersi[j])][i] = last(othersi[j])
         end
@@ -76,7 +76,7 @@ Default functions for 1 state variable
 
 ========================================================================================#
 
-function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drift = (0.0,))
+function derive(grid::StateGrid{1}, y::ReflectingArray, ituple::NTuple{1, Int}, drift = (0.0,))
   i = ituple[1]
   μx = drift[1]
   Δx, = grid.Δx
@@ -93,29 +93,29 @@ function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, 
 end
 
 function stationary_distribution(grid::StateGrid{1}, a)
-    xn, = size(grid)
+    n, = size(grid)
     Δx, = grid.Δx
     Δxp, = grid.Δxp
     Δxm, = grid.Δxm
-    A = ReflectingArray(zeros(xn, xn))
-    μname = Symbol(:μ, grid.name[1])
-    σname = Symbol(:σ, grid.name[1])
-    for i in 1:xn
-        if a[μname][i] >= 0
-            A[i + 1, i] += a[μname][i] / Δxp[i]
-            A[i, i] -= a[μname][i] / Δxp[i]
+    A = ReflectingArray(zeros(n, n))
+    for i in 1:n
+        μ = a[Symbol(:μ, grid.name[1])][i]
+        σ2 = a[Symbol(:σ, grid.name[1])][i]^2
+        if μ >= 0
+            A[i + 1, i] += μ / Δxp[i]
+            A[i, i] -= μ / Δxp[i]
         else
-            A[i, i] += a[μname][i] / Δxm[i] 
-            A[i - 1, i] -= a[μname][i] / Δxm[i] 
+            A[i, i] += μ / Δxm[i] 
+            A[i - 1, i] -= μ / Δxm[i] 
         end
-        A[i - 1, i] += 0.5 * a[σname][i]^2 * Δxp[i] / (Δx[i] * Δxm[i] * Δxp[i])
-        A[i, i] -= 0.5 * a[σname][i]^2 * 2 * Δx[i] / (Δx[i] * Δxm[i] * Δxp[i])
-        A[i + 1, i] += 0.5 * a[σname][i]^2 * Δxm[i] / (Δx[i] * Δxm[i] * Δxp[i])
+        A[i - 1, i] += 0.5 * σ2 * Δxp[i] / (Δx[i] * Δxm[i] * Δxp[i])
+        A[i, i] -= 0.5 * σ2 * 2 * Δx[i] / (Δx[i] * Δxm[i] * Δxp[i])
+        A[i + 1, i] += 0.5 * σ2 * Δxm[i] / (Δx[i] * Δxm[i] * Δxp[i])
     end
     for j in 1:size(A, 2)
         A[1, j] = 1.0
     end
-    b = vcat(1.0, zeros(xn - 1))
+    b = vcat(1.0, zeros(n - 1))
     density = A.A \ b
     @assert all(density .> -1e-5)
     density = abs(density) ./ sumabs(density)  
@@ -128,7 +128,7 @@ Default functions for 2 state variables
 
 ========================================================================================#
 
-function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{2}, drift = (0.0, 0.0))
+function derive(grid::StateGrid{2}, y::ReflectingArray, ituple::NTuple{2, Int}, drift = (0.0, 0.0))
     i1, i2 = ituple[1], ituple[2]
     μx1, μx2 = drift
     Δx1, Δx2 = grid.Δx
@@ -163,14 +163,14 @@ function stationary_distribution(grid::StateGrid{2}, a)
             μ = a[Symbol(:μ, grid.name[1])][i1, i2]
             σ2 = a[Symbol(:σ2, grid.name[1])][i1, i2]
             if μ >= 0
-                i1high = i1 + 1
-                i1low = i1
+                i1h = i1 + 1
+                i1l = i1
             else
-               i1high = i1
-               i1low = i1 - 1
+               i1h = i1
+               i1l = i1 - 1
             end
-            A[i1high, i2, i1, i2] += μ /  grid.Δx[1][i1]
-            A[i1low, i2, i1, i2] -= μ /  grid.Δx[1][i1]
+            A[i1h, i2, i1, i2] += μ /  grid.Δx[1][i1]
+            A[i1l, i2, i1, i2] -= μ /  grid.Δx[1][i1]
             A[i1 - 1, i2, i1, i2] += 0.5 * σ2 /  grid.Δx[1][i1]^2
             A[i1, i2, i1, i2] -= 0.5 * σ2 * 2/  grid.Δx[1][i1]^2
             A[i1 + 1,i2, i1, i2] += 0.5 * σ2 /  grid.Δx[1][i1]^2
@@ -178,23 +178,23 @@ function stationary_distribution(grid::StateGrid{2}, a)
             μ = a[Symbol(:μ, grid.name[2])][i1, i2]
             σ2 = a[Symbol(:σ2, grid.name[2])][i1, i2]
             if μ >= 0
-                i2high = i2 + 1
-                i2low = i2
+                i2h = i2 + 1
+                i2l = i2
             else
-               i2high = i2
-               i2low = i2 - 1
+               i2h = i2
+               i2l = i2 - 1
             end
-            A[i1, i2high, i1, i2] += μ /  grid.Δx[1][i1]
-            A[i1, i2low, i1, i2] -= μ /  grid.Δx[1][i1]
+            A[i1, i2h, i1, i2] += μ /  grid.Δx[1][i1]
+            A[i1, i2l, i1, i2] -= μ /  grid.Δx[1][i1]
             A[i1, i2 - 1, i1, i2] += 0.5 * σ2 /  grid.Δx[2][i2]^2
             A[i1, i2, i1, i2] -= 0.5 * σ2 * 2/  grid.Δx[2][i2]^2
             A[i1,i2 + 1, i1, i2] += 0.5 * σ2 /  grid.Δx[2][i2]^2
 
             σ12 = a[Symbol(:σ, grid.name[1], grid.name[2])][i1, i2]
-            A[i1high, i2high, i1, i2] += σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
-            A[i1low, i2high, i1, i2] -= σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
-            A[i1high, i2low, i1, i2] -= σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
-            A[i1low, i2low, i1, i2] += σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
+            A[i1h, i2h, i1, i2] += σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
+            A[i1l, i2h, i1, i2] -= σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
+            A[i1h, i2l, i1, i2] -= σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
+            A[i1l, i2l, i1, i2] += σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
         end
     end
     A = reshape(A.A, (n1 * n2, n1 * n2))
