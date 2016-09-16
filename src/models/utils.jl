@@ -96,45 +96,44 @@ end
 ##############################################################################
 
 function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drift = (0.0,))
-  is = ituple[1]
-  μs = drift[1]
-  Δs, = grid.Δx
-  Δsm, = grid.Δxm
-  Δsp, = grid.Δxp
-  p = y[is]
-  if μs >= 0.0
-      ps = (y[is + 1] - y[is]) / Δsp[is]
+  i = ituple[1]
+  μx = drift[1]
+  Δx, = grid.Δx
+  Δxm, = grid.Δxm
+  Δxp, = grid.Δxp
+  p = y[i]
+  if μx >= 0.0
+      px = (y[i + 1] - y[i]) / Δxp[i]
   else
-      ps = (y[is] - y[is - 1]) / Δsm[is]
+      px = (y[i] - y[i - 1]) / Δxm[i]
   end
-  pss = (Δsm[is] * y[is + 1] + Δsp[is] * y[is - 1] - 2 * Δs[is] * y[is]) / (Δs[is] * Δsm[is] * Δsp[is])
-  return p, ps, pss
+  pxx = (Δxm[i] * y[i + 1] + Δxp[i] * y[i - 1] - 2 * Δx[i] * y[i]) / (Δx[i] * Δxm[i] * Δxp[i])
+  return p, px, pxx
 end
 
 function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{2}, drift = (0.0, 0.0))
-    iμ, iσ = ituple[1], ituple[2]
-    ix, iν = ituple[1], ituple[2]
-    μX, μν = drift
-    Δx, Δν = grid.Δx
-    if μX <= 0.0
-      indx1 = 0
-      indx2 = -1
+    i1, i2 = ituple[1], ituple[2]
+    μx1, μx2 = drift
+    Δx1, Δx2 = grid.Δx
+    if μx1 <= 0.0
+      i1h = i1
+      i1l = i1 - 1
     else
-     indx1 = 1
-     indx2 = 0
+     i1h = i1 + 1
+     i1l = i1
     end
-    if μν <= 0.0
-      indν1 = 0
-      indν2 = -1
+    if μx2 <= 0.0
+      i2h = i2
+      i2l = i2 - 1
     else
-      indν1 = 1
-      indν2 = 0
+      i2h = i2 + 1
+      i2l = i2
     end
-    p = y[ix, iν]
-    px = (y[ix + indx1, iν] - y[ix + indx2, iν]) / Δx[ix]
-    pν = (y[ix, iν + indν1] - y[ix, iν + indν2]) / Δν[iν]
-    pxx = (y[ix + 1, iν] + y[ix - 1, iν] - 2 * y[ix, iν]) / Δx[ix]^2
-    pνν = (y[ix, iν + 1] + y[ix, iν - 1] - 2 * y[ix, iν]) / Δν[iν]^2
-    pxν = (y[ix + indx1, iν + indν1] - y[ix + indx1, iν + indν2] - y[ix + indx2, iν + indν1] + y[ix + indx2, iν + indν2]) / (Δν[iν] * Δx[ix])
-    return p, px, pν, pxx, pxν, pνν
+    p = y[i1, i2]
+    px1 = (y[i1h, i2] - y[i1l, i2]) / Δx1[i1]
+    px2 = (y[i1, i2h] - y[i1, i2l]) / Δx2[i2]
+    px1x1 = (y[i1 + 1, i2] + y[i1 - 1, i2] - 2 * y[i1, i2]) / Δx1[i1]^2
+    px2x2 = (y[i1, i2 + 1] + y[i1, i2 - 1] - 2 * y[i1, i2]) / Δx2[i2]^2
+    px1x2 = (y[i1h, i2h] - y[i1h, i2l] - y[i1l, i2h] + y[i1l, i2l]) / (Δx1[i1] * Δx2[i2])
+    return p, px1, px2, px1x1, px1x2, px2x2
 end
