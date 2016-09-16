@@ -69,16 +69,30 @@ function fullsolve(apm::EconPDEModel, grid::StateGrid, y0; kwargs...)
     return a, distance
 end
 
+
 #========================================================================================
 
-Minimal function to solve for stationary distribution and simulate in the case of one state variable
-TO DO : Version with several state variables
+Default functions for 1 state variable
 
 ========================================================================================#
-function stationary_distribution(grid, a)
-    if length(grid.name) > 2
-        throw("simulate does not work with multiple state variables")
-    end
+
+function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drift = (0.0,))
+  i = ituple[1]
+  μx = drift[1]
+  Δx, = grid.Δx
+  Δxm, = grid.Δxm
+  Δxp, = grid.Δxp
+  p = y[i]
+  if μx >= 0.0
+      px = (y[i + 1] - y[i]) / Δxp[i]
+  else
+      px = (y[i] - y[i - 1]) / Δxm[i]
+  end
+  pxx = (Δxm[i] * y[i + 1] + Δxp[i] * y[i - 1] - 2 * Δx[i] * y[i]) / (Δx[i] * Δxm[i] * Δxp[i])
+  return p, px, pxx
+end
+
+function stationary_distribution(grid::StateGrid{1}, a)
     xn, = size(grid)
     Δx, = grid.Δx
     Δxp, = grid.Δxp
@@ -98,7 +112,7 @@ function stationary_distribution(grid, a)
         A[i, i] -= 0.5 * a[σname][i]^2 * 2 * Δx[i] / (Δx[i] * Δxm[i] * Δxp[i])
         A[i + 1, i] += 0.5 * a[σname][i]^2 * Δxm[i] / (Δx[i] * Δxm[i] * Δxp[i])
     end
-    for j in 1:xn
+    for j in 1:size(A, 2)
         A[1, j] = 1.0
     end
     b = vcat(1.0, zeros(xn - 1))
@@ -108,25 +122,149 @@ function stationary_distribution(grid, a)
     return density 
 end
 
-function simulate(grid, a, shocks; dt = 1 / 12, x0 = grid.x[1][rand(Categorical(stationary_distribution(grid, a)), size(shocks, 2))])
+#========================================================================================
+
+Default functions for 2 state variables
+
+========================================================================================#
+
+function derive(grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{2}, drift = (0.0, 0.0))
+    i1, i2 = ituple[1], ituple[2]
+    μx1, μx2 = drift
+    Δx1, Δx2 = grid.Δx
+    if μx1 <= 0.0
+      i1h = i1
+      i1l = i1 - 1
+    else
+     i1h = i1 + 1
+     i1l = i1
+    end
+    if μx2 <= 0.0
+      i2h = i2
+      i2l = i2 - 1
+    else
+      i2h = i2 + 1
+      i2l = i2
+    end
+    p = y[i1, i2]
+    px1 = (y[i1h, i2] - y[i1l, i2]) / Δx1[i1]
+    px2 = (y[i1, i2h] - y[i1, i2l]) / Δx2[i2]
+    px1x1 = (y[i1 + 1, i2] + y[i1 - 1, i2] - 2 * y[i1, i2]) / Δx1[i1]^2
+    px2x2 = (y[i1, i2 + 1] + y[i1, i2 - 1] - 2 * y[i1, i2]) / Δx2[i2]^2
+    px1x2 = (y[i1h, i2h] - y[i1h, i2l] - y[i1l, i2h] + y[i1l, i2l]) / (Δx1[i1] * Δx2[i2])
+    return p, px1, px2, px1x1, px1x2, px2x2
+end
+
+function stationary_distribution(grid::StateGrid{2}, a)
+    n1, n2 = size(grid)
+    A = ReflectingArray(zeros(n1, n2, n1, n2))
+    for i2 in 1:n2
+        for i1 in 1:n1
+            μ = a[Symbol(:μ, grid.name[1])][i1, i2]
+            σ2 = a[Symbol(:σ2, grid.name[1])][i1, i2]
+            if μ >= 0
+                i1high = i1 + 1
+                i1low = i1
+            else
+               i1high = i1
+               i1low = i1 - 1
+            end
+            A[i1high, i2, i1, i2] += μ /  grid.Δx[1][i1]
+            A[i1low, i2, i1, i2] -= μ /  grid.Δx[1][i1]
+            A[i1 - 1, i2, i1, i2] += 0.5 * σ2 /  grid.Δx[1][i1]^2
+            A[i1, i2, i1, i2] -= 0.5 * σ2 * 2/  grid.Δx[1][i1]^2
+            A[i1 + 1,i2, i1, i2] += 0.5 * σ2 /  grid.Δx[1][i1]^2
+
+            μ = a[Symbol(:μ, grid.name[2])][i1, i2]
+            σ2 = a[Symbol(:σ2, grid.name[2])][i1, i2]
+            if μ >= 0
+                i2high = i2 + 1
+                i2low = i2
+            else
+               i2high = i2
+               i2low = i2 - 1
+            end
+            A[i1, i2high, i1, i2] += μ /  grid.Δx[1][i1]
+            A[i1, i2low, i1, i2] -= μ /  grid.Δx[1][i1]
+            A[i1, i2 - 1, i1, i2] += 0.5 * σ2 /  grid.Δx[2][i2]^2
+            A[i1, i2, i1, i2] -= 0.5 * σ2 * 2/  grid.Δx[2][i2]^2
+            A[i1,i2 + 1, i1, i2] += 0.5 * σ2 /  grid.Δx[2][i2]^2
+
+            σ12 = a[Symbol(:σ, grid.name[1], grid.name[2])][i1, i2]
+            A[i1high, i2high, i1, i2] += σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
+            A[i1low, i2high, i1, i2] -= σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
+            A[i1high, i2low, i1, i2] -= σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
+            A[i1low, i2low, i1, i2] += σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
+        end
+    end
+    A = reshape(A.A, (n1 * n2, n1 * n2))
+    for j in 1:size(A, 2)
+        A[1, j] = 1.0
+    end
+    b = vcat(1.0, zeros(size(A, 2) - 1))
+    density = A \ b
+    density = abs(density) ./ sumabs(density)  
+    return reshape(density, (n1, n2))
+end
+
+#========================================================================================
+
+Simulate
+
+========================================================================================#
+
+function simulate(grid::StateGrid, a, shocks::AbstractArray; kwargs...)
+    a = deepcopy(a)
+    shocks = Dict(:Z => shocks)
+    for name in grid.name
+        a[Symbol(:σ, :Z, name)] = a[Symbol(:σ, name)]
+    end
+    simulate(grid, a, shocks; kwargs...)
+end
+
+function simulate{N}(grid::StateGrid{N}, a, shocks::Dict; dt = 1 / 12, x0 = nothing)
+    T = size(shocks[first(keys(shocks))], 1)
+    I = size(shocks[first(keys(shocks))], 2)
+    if x0 == nothing
+        i0 = rand(Categorical(vec(stationary_distribution(grid, a))), I)
+        if N == 1
+            x0 = Dict(grid.name[1] => grid.x[1][i0])
+        elseif N == 2
+            i10 = mod(i0 - 1, length(grid.x[1])) + 1
+            i20 = div(i0 - 1, length(grid.x[1])) + 1
+            x0 = Dict(grid.name[1] => grid.x[1][i10], grid.name[2] => grid.x[2][i20])
+        end
+    end
     # interpolate all functions
     ai = Dict([Pair(k => interpolate(grid.x, a[k], Gridded(Linear()))) for k in keys(a)])
-    aT = Dict([Pair(k => zeros(shocks)) for k in keys(a)])
-    aT[:id] = zeros(shocks)
-    aT[:t] = zeros(shocks)
-    aT[:shock] = zeros(shocks)
+    aT = Dict([Pair(k => zeros(T, I)) for k in keys(a)])
+    aT[:id] = zeros(T, I)
+    aT[:t] = zeros(T, I)
+    for k in keys(shocks)
+        aT[k] = zeros(T, I)
+    end
     sqrtdt = sqrt(dt)
-    for id in 1:size(shocks, 2)
-        xt = x0[id]
-        for t in 1:size(shocks, 1)
+    for id in 1:I
+        xt = tuple([x0[grid.name[i]][id] for i in 1:N]...)
+        for t in 1:T
             for k in keys(a)
-                aT[k][t, id] = ai[k][xt]
+                aT[k][t, id] = ai[k][xt...]
             end
             aT[:id][t, id] = id
             aT[:t][t, id] = t
-            aT[:shock][t, id] = shocks[t, id]
-            xt = xt + ai[:μx][xt] * dt + ai[:σx][xt] * shocks[t, id] * sqrtdt
+            for k in keys(shocks)
+                aT[k][t, id] = shocks[k][t, id]
+            end
+            xt = tuple([xt[i] + _update_state(xt, grid.name[i], shocks, ai, t, id, dt, sqrtdt) for i in 1:N]...)
         end
     end
     return aT
+end
+
+function _update_state(xt, name, shocks, ai, t, id, dt, sqrtdt)
+    out = ai[Symbol(:μ, name)][xt...] * dt
+    for k in keys(shocks)
+        out += ai[Symbol(:σ, k, name)][xt...] * shocks[k][t, id] * sqrtdt
+    end
+    return out
 end
