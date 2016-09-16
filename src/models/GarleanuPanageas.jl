@@ -76,5 +76,5 @@ function pde(m::GarleanuPanageasModel, gridi, functionsi)
   out4 = ϕ2 * (B2 * ω / ϕ2 + (μ - δ - δ2) + μϕ2 + σ * σϕ2 - r - κ * (σϕ2 + σ))
 
   p = x * pA + (1 - x) * pB
-  return (out1, out2, out3, out4), μX, (:p => p, :pA => pA, :pB => pB, :κ => κ, :r => r, :μx => μX, :σx => σX)
+  return (out1, out2, out3, out4), (μX,), (:p => p, :pA => pA, :pB => pB, :κ => κ, :r => r, :μx => μX, :σx => σX)
 end

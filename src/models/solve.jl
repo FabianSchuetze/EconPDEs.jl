@@ -32,9 +32,9 @@ end
     Expr(:call, :tuple, [:(derive(apm, grid, fy[$k], args...)) for k in 1:N]...)
 end
 
-function derive(apm::EconPDEModel, grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drift = 0.0)
+function derive(apm::EconPDEModel, grid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drift = (0.0,))
   is = ituple[1]
-  μs = drift
+  μs = drift[1]
   Δs, = grid.Δx
   Δsm, = grid.Δxm
   Δsp, = grid.Δxp

@@ -58,5 +58,5 @@ function pde(m::CampbellCochraneModel, gridi, functionsi)
     σp = ps / p * σs
     μp = ps / p * μs + 0.5 * pss / p * σs^2
     out = p * (1 / p + μ + μp + σp * σ - r - κ * (σ + σp))
-    return out, μs, (:p => p, :κ => κ, :λ => λ, :r => r, :σp => σp, :μs => μs, :σs => σs)
+    return out, (μs,), (:p => p, :κ => κ, :λ => λ, :r => r, :σp => σp, :μs => μs, :σs => σs)
 end

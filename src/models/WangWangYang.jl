@@ -24,10 +24,10 @@ function initialize(m::WangWangYangModel, grid::StateGrid)
     grid.x[1]
 end
 	
-function derive(m::WangWangYangModel, stategrid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drifti = 0.0)
+function derive(m::WangWangYangModel, stategrid::StateGrid, y::ReflectingArray, ituple::CartesianIndex{1}, drifti = (0.0,))
     μ = m.μ ;  σ = m.σ ;  r = m.r ;  ρ = m.ρ ;  γ = m.γ ;  ψ = m.ψ 
     iw = ituple[1]
-    μw = drifti
+    μw = drifti[1]
     Δw, = stategrid.Δx
     p = max(1e-10, y[iw])
     n = length(Δw)
@@ -64,5 +64,5 @@ function pde(m::WangWangYangModel, gridi, functionsi)
     c = m * p * pw^(-ψ)
     out = ((m * pw^(1 - ψ) - ψ * ρ) / (ψ - 1) + μ - γ * σ^2 / 2) * p + ((r - μ + γ * σ^2) * w + 1) * pw + σ^2 * w^2 / 2  * (pww - γ * pw^2 / p)
     μw = (r - μ + σ^2) * w + 1 - c
-    return out, μw, (:w => w, :p => p, :pw => pw, :pww => pww, :μw => μw, :c => c)
+    return out, (μw,), (:w => w, :p => p, :pw => pw, :pww => pww, :μw => μw, :c => c)
 end
