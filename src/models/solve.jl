@@ -161,7 +161,7 @@ function stationary_distribution(grid::StateGrid{2}, a)
     for i2 in 1:n2
         for i1 in 1:n1
             μ = a[Symbol(:μ, grid.name[1])][i1, i2]
-            σ2 = a[Symbol(:σ2, grid.name[1])][i1, i2]
+            σ2 = a[Symbol(:σ, grid.name[1], :2)][i1, i2]
             if μ >= 0
                 i1h = i1 + 1
                 i1l = i1
@@ -176,7 +176,7 @@ function stationary_distribution(grid::StateGrid{2}, a)
             A[i1 + 1,i2, i1, i2] += 0.5 * σ2 /  grid.Δx[1][i1]^2
 
             μ = a[Symbol(:μ, grid.name[2])][i1, i2]
-            σ2 = a[Symbol(:σ2, grid.name[2])][i1, i2]
+            σ2 = a[Symbol(:σ, grid.name[2], :2)][i1, i2]
             if μ >= 0
                 i2h = i2 + 1
                 i2l = i2
@@ -213,14 +213,6 @@ Simulate
 
 ========================================================================================#
 
-function simulate(grid::StateGrid, a, shocks::AbstractArray; kwargs...)
-    a = deepcopy(a)
-    shocks = Dict(:Z => shocks)
-    for name in grid.name
-        a[Symbol(:σ, :Z, name)] = a[Symbol(:σ, name)]
-    end
-    simulate(grid, a, shocks; kwargs...)
-end
 
 function simulate{N}(grid::StateGrid{N}, a, shocks::Dict; dt = 1 / 12, x0 = nothing)
     T = size(shocks[first(keys(shocks))], 1)
@@ -263,8 +255,12 @@ end
 
 function _update_state(xt, name, shocks, ai, t, id, dt, sqrtdt)
     out = ai[Symbol(:μ, name)][xt...] * dt
-    for k in keys(shocks)
-        out += ai[Symbol(:σ, k, name)][xt...] * shocks[k][t, id] * sqrtdt
+    if length(keys(shocks)) == 1
+        out += ai[Symbol(:σ, name)][xt...] * shocks[first(keys(shocks))][t, id] * sqrtdt
+    else
+        for k in keys(shocks)
+            out += ai[Symbol(:σ, name, :_, k)][xt...] * shocks[k][t, id] * sqrtdt
+        end
     end
     return out
 end
