@@ -8,16 +8,16 @@
 \usepackage{babel}
 \begin{document}
 
-\title{Solving Economics PDE Models}
+\title{A New Algorithm to Solve PDE Models}
 \author{\large{\textsc{Matthieu Gomez \thanks{I thank Valentin Haddad and Ben Moll for useful discussions.}}}}
 \date{\today}
 \maketitle
-This note details how $\Psi tc$ works
+This note details a new algorithm to solve PDEs associated with economic models in continuous time.
 
 \section{Solving Finite Difference Schemes}
 
 \subsection{How $\Psi tc$ works}
-Denote $Y$  the solution (encoded as an array) and denote $F(Y) = 0$ the finite difference scheme corresponding to a model. On can solve for $Y$ using one of the two methods:
+Denote $Y$  the solution and denote $F(Y) = 0$ the finite difference scheme corresponding to a model. On can solve for $Y$ using one of the two methods:
 
 \begin{enumerate}
 	\item Non linear solver for $F (Y ) = 0$. Updates take the form
@@ -47,9 +47,9 @@ How does the method relate to the two algorithms seen above? When $I =1$ (i.e. w
 \begin{align*}
 	\forall t \leq T \hspace{1cm} 0&= F(y_{t+1}) (J_{F}(y_t) - \frac{1}{\Delta})(y_{t+1} -y_{t})
 \end{align*}
-The method can be also be seen as a dampened Newton-Raphson algorithm. As in the Levenberg-Marquardt method, the diagonal of the Jacobian is modified until the algorithm gets close to the solution.
+Alternatively, the method can be also be seen as a dampened Newton-Raphson algorithm. As in the Levenberg-Marquardt method, the diagonal of the Jacobian is modified until the algorithm gets close to the solution.
 
-At the start of the algorithm, the jacobian is computed using analytical differenciation. It is then updated with Broyden updates. The algorithm usally converges quickly: the convergence is quadratic around the solution, since the algorithm follows the Newton-Rapshon method around the solution.
+The algorithm usally converges quickly: the convergence is quadratic around the solution, since the algorithm follows the Newton-Rapshon method around the solution.
 
 \subsection{Related Methods}
 	

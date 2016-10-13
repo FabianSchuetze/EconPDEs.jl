@@ -70,8 +70,8 @@ function pde(m::GarleanuPanageasModel, grid, y, ituple, idrift = (0.0, 0.0))
   μϕ2 = ϕ2x / ϕ2 * μX + 0.5 * ϕ2xx / ϕ2 * σX^2
 
   # PDE
-  out1 = pA * (1 / pA + μCA + μpA + σCA * σpA - r - δ - κ * (σpA + σCA))
-  out2 = pB * (1 / pB + μCB + μpB + σCB * σpB - r - δ - κ * (σpB + σCB))
+  out1 = pA * (1 / pA + (μCA - δ) + μpA + σCA * σpA - r - κ * (σpA + σCA))
+  out2 = pB * (1 / pB + (μCB - δ) + μpB + σCB * σpB - r - κ * (σpB + σCB))
   out3 = ϕ1 * (B1 * ω / ϕ1 + (μ - δ - δ1) + μϕ1 + σ * σϕ1 - r - κ * (σϕ1 + σ))
   out4 = ϕ2 * (B2 * ω / ϕ2 + (μ - δ - δ2) + μϕ2 + σ * σϕ2 - r - κ * (σϕ2 + σ))
 

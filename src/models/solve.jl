@@ -190,7 +190,7 @@ function stationary_distribution(grid::StateGrid{2}, a)
             A[i1, i2, i1, i2] -= 0.5 * σ2 * 2/  grid.Δx[2][i2]^2
             A[i1,i2 + 1, i1, i2] += 0.5 * σ2 /  grid.Δx[2][i2]^2
 
-            σ12 = a[Symbol(:σ, grid.name[1], grid.name[2])][i1, i2]
+            σ12 = a[Symbol(:σ, grid.name[1], :σ, grid.name[2])][i1, i2]
             A[i1h, i2h, i1, i2] += σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
             A[i1l, i2h, i1, i2] -= σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
             A[i1h, i2l, i1, i2] -= σ12 /  (grid.Δx[1][i1] * grid.Δx[2][i2])
