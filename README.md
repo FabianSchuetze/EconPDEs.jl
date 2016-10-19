@@ -5,12 +5,11 @@
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
 
-The package introduces a novel, fast and robust solver for economics models in continuous time. 
-
-The function can solves PDEs, systems of PDEs, or systems of PDEs + algebraic equations.
+The package includes a fast and robust solver for economics models in continuous time, based on implicit time-stepping.
 
 The underlying algorithm is explained in details [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf).
 
+The function handles systems of PDEs + eventual algebraic equations.
 
 
 # Syntax
