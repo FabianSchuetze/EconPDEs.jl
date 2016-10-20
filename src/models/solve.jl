@@ -132,19 +132,19 @@ function derive(grid::StateGrid{2}, y::ReflectingArray, ituple::NTuple{2, Int}, 
     i1, i2 = ituple[1], ituple[2]
     μx1, μx2 = drift
     Δx1, Δx2 = grid.Δx
-    if μx1 <= 0.0
+    if μx1 >= 0.0
+        i1h = i1 + 1
+        i1l = i1
+    else
       i1h = i1
       i1l = i1 - 1
-    else
-     i1h = i1 + 1
-     i1l = i1
     end
-    if μx2 <= 0.0
+    if μx2 >= 0.0
+        i2h = i2 + 1
+        i2l = i2
+    else
       i2h = i2
       i2l = i2 - 1
-    else
-      i2h = i2 + 1
-      i2l = i2
     end
     p = y[i1, i2]
     px1 = (y[i1h, i2] - y[i1l, i2]) / Δx1[i1]
