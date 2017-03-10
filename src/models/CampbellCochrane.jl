@@ -48,8 +48,8 @@ function pde(m::CampbellCochraneModel, grid, y, ituple, idrift = (0.0, 0.0))
     # evolution state variable
     Sbar = σ * sqrt(γ / (κs - b / γ))
     sbar = log(Sbar)
-    μs = - κs * (s - sbar)
     λ = 1 / Sbar * sqrt(1 - 2 * (s - sbar)) - 1
+    μs = - κs * (s - sbar)
     σs = λ * σ
     # sdf
     r = ρ + γ * μ - (γ * κs - b) / 2 + b * (sbar - s)

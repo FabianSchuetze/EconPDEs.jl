@@ -5,14 +5,14 @@
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
 
-The package includes a fast and robust solver for economics models in continuous time, based on implicit time-stepping.
+The package includes (i) a fast and robust PDE solver (ii) a higher lever solver for economics models in continuous time. 
 
-The underlying algorithm is explained in details [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf).
-
-The function handles systems of PDEs + eventual algebraic equations.
+The PDE solver is based on implicit time-stepping, as explained in details [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf). The function handles systems of PDEs + eventual algebraic equations.
 
 
-# Syntax
+
+
+# PDE Solver
 
  The solver `Ψtc` has the following syntax. 
  - The first argument is the model, given as a function `F!(y, out)`.
@@ -25,10 +25,16 @@ The function handles systems of PDEs + eventual algebraic equations.
  - The option `autodiff` (default to `true`) specifies that the Jacobian is evaluated using automatic differentiation.
 
 
-# Asset Pricing Models
-I solve several models to show how `Ψct` works. Models are coded in the folder `src/models`. 
+# Higher-level Solver for Economics Models
+I use the PDE solver `Ψtc` to solve several models in continous time.
 
-Open an issue or send me an email if you spot mistakes. Pull requests are welcome.
+Each model only needs to define four elements
+- a type that includes the model parameters
+- a `Stategrid` function that creates the state space grid
+- an `initialize` function that corresponds to the initial solution of the problem
+- a `pde` function that codes the PDE of the model.
+
+Models are coded in the folder `src/models`.
 
 ### Campbell Cochrane (1999)
 Asset pricing model with time varying habit
