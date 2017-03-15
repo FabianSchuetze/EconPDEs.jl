@@ -28,7 +28,7 @@ function StateGrid(m::DiTellaModel; xn = 80, νn = 10)
   distribution = Gamma(2 * κν * νbar / σνbar^2, σνbar^2 / (2 * κν))
   νmin = quantile(distribution, 0.001)
   νmax = quantile(distribution, 0.999)
-  StateGrid(x = linspace(0.01, 1.0, xn), ν = linspace(νmin, νmax, νn))
+  StateGrid(x = linspace(0.01, 0.99, xn), ν = linspace(νmin, νmax, νn))
 end
 
 function initialize(m::DiTellaModel, grid::StateGrid)
@@ -55,7 +55,7 @@ function pde(m::DiTellaModel, grid, y, ituple, idrift = (0.0, 0.0))
   νA = κν / γ
   σB = κ / γ + (1 - γ) / (γ * (ψ - 1)) * σpB
 
-  μX = x * (1 - x) * (σA * κ + νA * κν - 1 / pA - τ - (σB * κ -  1 / pB) - (σA - σB) * (σ + σp))
+  μX = x * (1 - x) * ((σA * κ + νA * κν - 1 / pA - τ) - (σB * κ -  1 / pB + τ * x / (1 - x)) - (σA - σB) * (σ + σp))
   μpA = pAx / pA * μX + pAν / pA * μν + 0.5 * pAxx / pA * σX^2 + 0.5 * pAνν / pA * σν^2 + pAxν / pA * σX * σν
   μpB = pBx / pB * μX + pBν / pB * μν + 0.5 * pBxx / pB * σX^2 + 0.5 * pBνν / pB * σν^2 + pBxν / pB * σX * σν
   μp = px / p * μX + pν / p * μν + 0.5 * pxx / p * σX^2 + 0.5 * pνν / p * σν^2 + pxν / p * σX * σν
