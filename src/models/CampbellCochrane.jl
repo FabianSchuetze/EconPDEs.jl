@@ -45,18 +45,25 @@ function pde(m::CampbellCochraneModel, grid, y, ituple, idrift = (0.0, 0.0))
     μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
     s, = grid[ituple]
     p, ps, pss  = derive(grid, y[1], ituple, idrift)
-    # evolution state variable
+    
+    # drift and volatility of state variable s
     Sbar = σ * sqrt(γ / (κs - b / γ))
     sbar = log(Sbar)
     λ = 1 / Sbar * sqrt(1 - 2 * (s - sbar)) - 1
     μs = - κs * (s - sbar)
     σs = λ * σ
-    # sdf
-    r = ρ + γ * μ - (γ * κs - b) / 2 + b * (sbar - s)
+
+    # market price of risk κ
     κ = γ * (σ + σs)
-    # wealth / consumption
+
+    # risk free rate  r
+    r = ρ + γ * μ - (γ * κs - b) / 2 + b * (sbar - s)
+
+    # drift and volatility of p
     σp = ps / p * σs
     μp = ps / p * μs + 0.5 * pss / p * σs^2
+
+    # PDE
     out = p * (1 / p + μ + μp + σp * σ - r - κ * (σ + σp))
     return out, (μs,), (:p => p, :κ => κ, :λ => λ, :r => r, :σp => σp, :μs => μs, :σs => σs)
 end

@@ -47,6 +47,8 @@ function pde(m::BansalYaronModel, grid, y, ituple, idrift = (0.0, 0.0))
     μbar = m.μbar ; νc = m.νc ; κμ = m.κμ ; κσ = m.κσ ; νμ = m.νμ ; νσ = m.νσ ; ρ = m.ρ ; γ = m.γ ; ψ = m.ψ
     μ, σ = grid[ituple]
     p, pμ, pσ, pμμ, pμσ, pσσ = derive(grid, y[1], ituple, idrift)
+
+    # drift and volatility of c, μ, σ, p
     μc = μ
     σc_Zc = νc * sqrt(σ)
     μμ = κμ * (μbar - μ)
@@ -58,18 +60,20 @@ function pde(m::BansalYaronModel, grid, y, ituple, idrift = (0.0, 0.0))
     σp2 = σp_Zμ^2 + σp_Zσ^2
     μp = pμ / p * μμ + pσ / p * μσ + 0.5 * pμμ / p * σμ_Zμ^2 + 0.5 * pσσ / p * σσ_Zσ^2
 
-    # first derivation: HJB with V = c^(1-γ)/(1-γ) * p^θ * ρ^θ
-    out = p * (1 / p - ρ + (1 - 1 / ψ) * (μc - 0.5 * γ * σc_Zc^2) + μp + 0.5 * (1 / ψ - γ) / (1 - 1 / ψ) * σp2)
-
-    # second derivation: express κ and r in term of p then use PDE for p
+    # Market price of risk κ
     κ_Zc = γ * σc_Zc
     κ_Zμ = - (1 - γ * ψ) / (ψ - 1) * σp_Zμ
     κ_Zσ = - (1 - γ * ψ) / (ψ - 1) * σp_Zσ
     κσC = κ_Zc * σc_Zc
     κσp = κ_Zμ * σp_Zμ + κ_Zσ * σp_Zσ
     κ2 = κ_Zc^2 + κ_Zμ^2 + κ_Zσ^2
+
+    # Risk free rate r
     r = ρ + 1 / ψ * (μc - (1 + ψ)/ (2 * γ) * κ2 - (1 - ψ * γ) / (γ * (ψ - 1)) * κσp + (1 - γ * ψ) / (2 * γ * (ψ - 1)) * σp2)
-    out2 = p * (1 / p + μc + μp - r - κσC - κσp)
+
+    # PDE
+    out = p * (1 / p + μc + μp - r - κσC - κσp)
+    # out = p * (1 / p - ρ + (1 - 1 / ψ) * (μc - 0.5 * γ * σc_Zc^2) + μp + 0.5 * (1 / ψ - γ) / (1 - 1 / ψ) * σp2)
 
     return out, (μμ, μσ), (:p => p, :μμ => μμ, :σμ_Zμ => σμ_Zμ, :σμ_Zσ => 0.0, :μσ => μσ, :σσ_Zμ => 0.0, :σσ_Zσ => σσ_Zσ, :μ => μ, :σ => σ, :σμ2 => σμ_Zμ^2, :σσ2 => σσ_Zσ^2, :σμσσ => 0.0)
 end

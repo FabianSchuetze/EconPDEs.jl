@@ -4,15 +4,16 @@
 ```julia
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
-
-The package includes (i) a fast and robust PDE solver (ii) a higher lever solver for economics models in continuous time. 
-
-The PDE solver is based on implicit time-stepping, as explained in details [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf). The function handles systems of PDEs + eventual algebraic equations.
+This package presents a fast and robust algorithm to solve economic models in continuous time.
 
 
+More precisely, the package includes 
+1. a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations
+2. a higher-level function `solve` to solve  economics models
 
 
-# PDE Solver
+# `Ψtc` solves systems of PDES
+The function `Ψtc` allows to solve systems of PDEs + eventual algebraic equations.
 
  The solver `Ψtc` has the following syntax. 
  - The first argument is the model, given as a function `F!(y, out)`.
@@ -24,17 +25,28 @@ The PDE solver is based on implicit time-stepping, as explained in details [here
  - The option `inner_iterations` (default to `10`) specifies the number of inner Newton-Raphson iterations. 
  - The option `autodiff` (default to `true`) specifies that the Jacobian is evaluated using automatic differentiation.
 
+ The algorithm underlying this PDE solver is explained in details [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
 
-# Higher-level Solver for Economics Models
-I use the PDE solver `Ψtc` to solve several models in continous time.
 
-Each model only needs to define four elements
-- a type that includes the model parameters
-- a `Stategrid` function that creates the state space grid
-- an `initialize` function that corresponds to the initial solution of the problem
-- a `pde` function that codes the PDE of the model.
+# `solve` solves  economic models
 
-Models are coded in the folder `src/models`.
+The function `solve` is a higher-level function to solve economic models. In the background, the function still relies on the PDE solver `Ψtc` in the background. The goal of this function is to reduce the boilerplate when solving new models.
+
+To `solve` a economic model, the user only needs to define three functions.
+- a `Stategrid` function that creates the state space grid specific to the economic problem.
+- an `initialize` function that returns an initial guess for the functions that solve the system of PDEs.
+- a `pde` function that returns the system of PDEs. More precisely, the function takes as argument a current guess and a grid position. It returns  a tuple of three terms.
+	1. The first term is a tuple corresponding to the system of equations evaluated at this grid point.
+	2. the second term is a tuple for the drift of state variables (used to upwind the scheme).
+	3. the third term is a dictionary from symbols to value. It is not used to solve the model, but it allows to compute interesting quantities beyond the solution of the PDEs.
+
+Examples of these functions can be found in the folder `src/models`. I have coded:
+- Habit Model of Campbell Cochrane (1999)
+- Long Run Risk Model of Bansal Yaron (2004)
+- Heterogeneous Agent Models of Garleanu Panageas (2015) and DiTella (2016)
+
+
+## Examples
 
 ### Campbell Cochrane (1999)
 Asset pricing model with time varying habit
@@ -43,7 +55,7 @@ using EconPDEs
 m = CampbellCochraneModel()
 grid = StateGrid(m)
 y0 = initialize(m, grid)
-result, distance = fullsolve(m, grid, y0)
+result, distance = solve(m, grid, y0)
 
 # plot results
 using Plots
@@ -56,7 +68,7 @@ Wachter (2005) calibration:
 m = CampbellCochraneModel(μ = 0.022, σ = 0.0086, γ = 2.0, ρ = 0.073, κs = 0.116, b = 0.011 * 4)
 grid = StateGrid(m)
 y0 = initialize(m, grid)
-result, distance = fullsolve(m, grid, y0)
+result, distance = solve(m, grid, y0)
 ```
 
 
@@ -69,7 +81,7 @@ using EconPDEs
 m = BansalYaronModel()
 grid = StateGrid(m)
 y0 = initialize(m, grid)
-result, distance = fullsolve(m, grid, y0)
+result, distance = solve(m, grid, y0)
 
 # plot results
 using Plots
@@ -83,7 +95,7 @@ using EconPDEs
 m = BansalYaronModel(μbar = 0.018, νc = 0.025, κμ = 0.3, κσ = 0.012, νμ = 0.0114, νσ = 0.189, ρ = 0.0132, γ = 7.5, ψ = 1.5)
 grid = StateGrid(m)
 y0 = initialize(m, grid)
-result, distance = fullsolve(m, grid, y0)
+result, distance = solve(m, grid, y0)
 ```
 
 ### Garleanu Panageas (2015)
@@ -93,7 +105,7 @@ using EconPDEs
 m = GarleanuPanageasModel()
 grid = StateGrid(m)
 y0 = initialize(m, grid)
-result, distance = fullsolve(m, grid, y0)
+result, distance = solve(m, grid, y0)
 
 # plot results
 using Plots
@@ -111,7 +123,7 @@ grid = StateGrid(m)
 y0 = initialize(m, grid)
 is_algebraic = fill(false, size(y0)...)
 is_algebraic[:, :, 3] = true
-result, distance = fullsolve(m, grid, y0, is_algebraic = is_algebraic)
+result, distance = solve(m, grid, y0, is_algebraic = is_algebraic)
 
 # plot results
 using Plots
@@ -120,8 +132,6 @@ surface(grid[:x], grid[:ν], result[:p])
 ```
 
 
-# Macro Models
-
 ### Wang Wang Yang (2016)
 Consumption - saving problem with idiosyncratic income risk
 ```julia
@@ -129,7 +139,7 @@ using EconPDEs
 ap = WangWangYangModel()
 grid = StateGrid(ap)
 y0 = initialize(ap, grid)
-result, distance = fullsolve(ap, grid, y0)
+result, distance = solve(ap, grid, y0)
 
 # plot results
 using Plots
