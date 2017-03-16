@@ -57,40 +57,39 @@ To `solve` a economic model, the user only needs to define a type and three func
 	end
 	# initialize
 	function CampbellCochraneModel(;μ = 0.0189, σ = 0.015, γ = 2.0, ρ = 0.116, κs = 0.138, b = 0.0)
-	    # I choose persistence so that monthly simulation of the model matches processes in CC (1999)
-	    # ρ = 12 * (1 - 0.89^(1/12))
-	    # κs = 12 * (1 - 0.87^(1/12))
 	    CampbellCochraneModel(μ, σ, γ, ρ, κs, b)
 	end
 	```
-- a `Stategrid` function that creates the state space grid. For the case of Campbell Cochrane (1999),
+- a `Stategrid` function that creates the state space grid. For the case of Campbell Cochrane (1999), I create a logspaced grid for habit between `log(-300)` and `1`
 	```julia
 	function StateGrid(m::CampbellCochraneModel; smin = -300.0, n = 1000)
 	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
 	    Sbar = σ * sqrt(γ / (κs - b / γ))
 	    sbar = log(Sbar)
 	    smax =  sbar + 0.5 * (1 - Sbar^2)
-	    s = linspace(smin, smax, n)
+	    s = logspace(- 5, smax, n)
 	    StateGrid(s = s)
 	end
 	```
-- an `initialize` function that returns an initial guess. I simply takes a vector of ones for the case of Campbell Cochrane (1999):
+- an `initialize` function that returns an initial guess. In my experience, the pseudo transient algorithm is robust to the exact initial condition so I simply take a vector of ones:
 
 	```julia
 	function initialize(m::CampbellCochraneModel, grid::StateGrid)
 	    fill(1.0, size(grid)...)
 	end
 	```
-- a `pde` function that returns the system of PDEs. More precisely, the function takes as argument a current guess and a grid position. It returns  a tuple of three terms.
+- a `pde` function that returns the system of PDEs. This function encodes the model. The function takes as argument the model `m`, the grid `grid`, a current guess for the solution `y`, a tuple corresponding to the grid coordinates `ituple`, and a tuple corresponding to the drift of state varaibles at this position `idrift`. It returns  a tuple of three terms.
 	1. A tuple corresponding to the value of the PDEs at this grid point.
 	2. A tuple corresponding to the drift of state variables at this grid point (used for upwinding).
 	3. A dictionary from symbols to values. This dictionary simply stores side functions computed while writing the PDE.
 
-For the case of Campbell Cochrane (1999),
+	This is the `pde` function for the case of Campbell Cochrane (1999),
 	```julia
 	function pde(m::CampbellCochraneModel, grid, y, ituple, idrift = (0.0, 0.0))
 	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
+	    # Value of the state variable at the position ituple
 	    s, = grid[ituple]
+	    # Derivatives of the guess at the position ituple
 	    p, ps, pss  = derive(grid, y[1], ituple, idrift)
 	    
 	    # drift and volatility of state variable s
@@ -116,7 +115,7 @@ For the case of Campbell Cochrane (1999),
 	end
 	```
 
-Each model is coded as a system of PDEs, where each PDE corresponds to the no-arbitrage condition for an asset. All the models can be found in `src/models`. 
+Other models are coded similarly. All the models can be found in `src/models`. 
 
 ```julia
 using EconPDEs 
