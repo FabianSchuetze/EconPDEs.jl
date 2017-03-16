@@ -5,7 +5,7 @@
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
 
-This package implements a fast and robust algorithm to solve economic models in continuous time. I demonstrate the interest of this algorithm by solving a variety of well-known economic models in continuous time. This package was developed while writing my PhD thesis.
+This package proposes a new, fast, and robust algorithm to solve economic models in continuous time. I demonstrate the interest of this algorithm by solving a variety of well-known economic models in continuous time. This package was developed while writing my PhD thesis.
 
 
 
