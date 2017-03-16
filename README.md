@@ -48,7 +48,8 @@ Examples of these functions can be found in the folder `src/models`. 	Each model
 ```julia
 using EconPDEs 
 
-# Campbell Cochrane (1999)
+# Habit Models
+## Campbell Cochrane (1999)
 m = CampbellCochraneModel()
 grid = StateGrid(m)
 y0 = initialize(m, grid)
@@ -56,15 +57,14 @@ result, distance = solve(m, grid, y0)
 using Plots
 plotly()
 plot(exp(grid[:s]), result[:p])
-
-# Wachter (2005) calibration:
+## Wachter (2005) calibration:
 m = CampbellCochraneModel(μ = 0.022, σ = 0.0086, γ = 2.0, ρ = 0.073, κs = 0.116, b = 0.011 * 4)
 grid = StateGrid(m)
 y0 = initialize(m, grid)
 result, distance = solve(m, grid, y0)
 
-
-# Bansal Yaron (2004)
+# Long Run Risk Models
+## Bansal Yaron (2004)
 m = BansalYaronModel()
 grid = StateGrid(m)
 y0 = initialize(m, grid)
@@ -72,14 +72,14 @@ result, distance = solve(m, grid, y0)
 using Plots
 plotly()
 surface(grid[:μ], grid[:σ], result[:p])
-
-# Bansal, Kiku, Yaron (2009) calibration
+## Bansal, Kiku, Yaron (2009) calibration
 m = BansalYaronModel(μbar = 0.018, νc = 0.025, κμ = 0.3, κσ = 0.012, νμ = 0.0114, νσ = 0.189, ρ = 0.0132, γ = 7.5, ψ = 1.5)
 grid = StateGrid(m)
 y0 = initialize(m, grid)
 result, distance = solve(m, grid, y0)
 
-# Garleanu Panageas (2015)
+# Heterogeneous Agent Models
+## Garleanu Panageas (2015)
 m = GarleanuPanageasModel()
 grid = StateGrid(m)
 y0 = initialize(m, grid)
@@ -87,8 +87,7 @@ result, distance = solve(m, grid, y0)
 using Plots
 plotly()
 plot(grid[:x], result[:p])
-
-# DiTella (2016)
+## DiTella (2016)
 using EconPDEs
 m = DiTellaModel()
 grid = StateGrid(m)
@@ -100,7 +99,8 @@ using Plots
 plotly()
 surface(grid[:x], grid[:ν], result[:p])
 
-# Wang Wang Yang (2016): Consumption - saving problem with idiosyncratic income risk
+# Consumption - saving problem with idiosyncratic income risk
+## Wang Wang Yang (2016)
 ap = WangWangYangModel()
 grid = StateGrid(ap)
 y0 = initialize(ap, grid)
