@@ -41,9 +41,9 @@ To `solve` a economic model, the user only needs to define three functions.
 	3. the third term is a dictionary from symbols to value. It is not used to solve the model, but it allows to compute interesting quantities beyond the solution of the PDEs.
 
 Examples of these functions can be found in the folder `src/models`. I have coded:
-- Asset pricing model with time varying habit (Campbell Cochrane (1999), Wachter (2005))
-- Asset pricing model with long run risk (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
-- Asset pricing model with heterogeneous agents (Garleanu Panageas (2015), DiTella (2016))
+- Asset pricing model with *time varying habit (Campbell Cochrane (1999), Wachter (2005)*)
+- Asset pricing model with *long run risk (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009)*)
+- Asset pricing model with *heterogeneous agents (Garleanu Panageas (2015), DiTella (2016)*)
 - Consumption - saving problem with idiosyncratic income risk (Wang Wang Yang (2016))
 
 Each model is coded as a system of PDEs. Each PDE corresponds to the no-arbitrage condition for an asset.
