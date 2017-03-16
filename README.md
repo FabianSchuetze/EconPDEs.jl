@@ -89,7 +89,7 @@ To `solve` a economic model, the user only needs to define a type and three func
 	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
 	    # Value of the state variable at the position ituple
 	    s, = grid[ituple]
-	    # Derivatives of the guess at the position ituple
+	    # Derivatives of the current guess y at the position ituple
 	    p, ps, pss  = derive(grid, y[1], ituple, idrift)
 	    
 	    # drift and volatility of state variable s
@@ -115,7 +115,8 @@ To `solve` a economic model, the user only needs to define a type and three func
 	end
 	```
 
-Other models are coded similarly. All the models can be found in `src/models`. 
+
+Given these definitions, we can now solve for the Campbell Cochrane (1999) model
 
 ```julia
 using EconPDEs 
@@ -126,15 +127,22 @@ m = CampbellCochraneModel()
 grid = StateGrid(m)
 y0 = initialize(m, grid)
 result, distance = solve(m, grid, y0)
+
+# graphs
 using Plots
 plotly()
 plot(exp(grid[:s]), result[:p])
+
 ## Wachter (2005) calibration:
 m = CampbellCochraneModel(μ = 0.022, σ = 0.0086, γ = 2.0, ρ = 0.073, κs = 0.116, b = 0.011 * 4)
 grid = StateGrid(m)
 y0 = initialize(m, grid)
 result, distance = solve(m, grid, y0)
+```
 
+
+Other models are coded similarly. All the models can be found in `src/models`. 
+```julia
 # Long Run Risk Models
 ## Bansal Yaron (2004)
 m = BansalYaronModel()
