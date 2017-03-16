@@ -6,6 +6,7 @@
 \usepackage{amssymb}
 \usepackage{esint}
 \usepackage{babel}
+\usepackage[capitalise, noabbrev]{cleveref}
 \usepackage[round]{natbib}
 \begin{document}
 	\title{Solving Economic Models in Continuous Time using the Pseudo-Transient Method}
@@ -14,51 +15,44 @@
 	\maketitle
 	This note details how to solve systems of PDEs + algebraic equations associated with economic models in continuous time.
 
-	\paragraph{Algorithm.}
-	I propose to solve the non linear system corresponding to economic models using the Pseudo-Transient Continuation (denoted $\Psi tc$) method. This method is used in the fluid dynamics literature. 
-	\par Formal conditions for the convergence of the algorithm are given in  \citet{kelley1998convergence}, but I now derive an intuition for the algorithm.\par
-	Denote $Y$  the solution and denote $F(Y) = 0$ the finite difference scheme corresponding to a model. The existing literature in economics solves for $Y$ using using one of the two methods:
+	\paragraph{Intuition.}
+Denote $Y$  the solution and denote $F(Y)$ the finite difference scheme corresponding to a model. The goal is to find $Y$ such that $F(Y) = 0$ The existing literature in economics solves for $Y$ using using one of the two methods:
 
 	\begin{enumerate}
-		\item Non linear solver for $F (Y ) = 0$. Updates take the form
-		\begin{align*}
+		\item Non linear solver for $F (Y ) = 0$. A Newton-Raphson update takes the form
+		\begin{align}\label{1}
 			0 &= F(y_{t}) + J_{F}(y_t) (y_{t+1} - y_t)
-		\end{align*}
+		\end{align}
 		The method converges only if the initial guess is sufficiently close to the solution.\footnote{See, for instance, \citet{campbell1999force}.}
 		\item ODE solver for $F(Y) = \dot{Y}$. The solution of $F(Y)=0$ is obtained with $T\rightarrow +\infty$. \footnote{See, for instance, \citet{ditellabalance}, \citet{silva2015risk}.}
 		With a simple explicit Euler method, updates take the form
-		\begin{align*}
+		\begin{align}\label{2}
 			0&= F(y_t) - \frac{1}{\Delta} (y_{t+1} -y_{t})
-		\end{align*}
+		\end{align}
 		Convergence conditions are given by the Barles-Souganadis theorem. Explicit schemes usually don't satisfy them.
 	\end{enumerate}
-	Rather than one of these two methods, I propose to solve for $Y$ using fully implicit Euler method.  Updates take the form 
+	Rather than one of these two methods, I propose to solve for $Y$ using fully implicit Euler method.  Updates now take the form 
 	\begin{align*}
 		\forall t \leq T \hspace{1cm} 0&= F(y_{t+1}) - \frac{1}{\Delta}(y_{t+1} -y_{t})
 	\end{align*}
-	Each time step is a non linear equation, which I solve using a Newton-Raphson method. These inner iterations take the form
-	\begin{align*}
+	Each time step now requires to solve a non linear equation. I solve this non linear equation using a Newton-Raphson method. These inner iterations take the form
+	\begin{align}\label{inner}
 		\forall i \leq I \hspace{1cm}	0 &= F(y_{t}^i) - \frac{1}{\Delta}(y_{t}^{i} -y_{t}) + (J_{F}(y_t^i) -  \frac{1}{\Delta})(y^{i+1}_{t} - y_t^i)
-	\end{align*}
-	These inner iterations converge as long as $y_t$ is sufficiently close to $y_{t+1}$. Therefore I decrease $\Delta$ until the inner Newton-Raphson method converges.\par
-	How does the method relate to the two algorithms seen above? When $I =1$ (i.e. with only one inner iteration) the update can be seen as the sum of a Newton-Raphson and an explicit time step
-	\begin{align*}
-		\forall t \leq T \hspace{1cm} 0&= F(y_{t+1}) + (J_{F}(y_t) - \frac{1}{\Delta})(y_{t+1} -y_{t})
-	\end{align*}
-	The step becomes close to a pure Newton-Rapshon step as $\Delta \rightarrow + \infty$. Therefore, the convergence is quadratic around the solution. \par
-	I accommodate algebraic equations by setting $\Delta$ to $+\infty$ for the coordinates  of $F$ that correspond to algebraic equations. This ensures that the PDEs are solved backward on a path that always satisfies the algebraic constraints.\par
-	\paragraph{Relation with other methods.} The algorithm with $I=1$ and $\Delta$ constant corresponds to \citet{achdou2014heterogeneous}, an algorithm for PE models. Allowing $I > 1$ and adjusting $\Delta$  are important to ensure convergence in GE models.
+	\end{align}
+	We know that the Newton-Raphson method converges if the initial guess is close enough to the solution. Since $y_{t}$ converges towards $y_{t+1}$ as $\Delta$ tends to zero, one can always choose $\Delta$ low enough so that the inner steps converge.\par
+	I adjust $\Delta$ as follows. If the inner iterations do not converge, I decrease $\Delta$. When the inner iteration converges, I increase $\Delta$. \par
+	The update \cref{inner} can be see as weighted average of the Newton-Raphson step \cref{1} and of the explicit Euler step \cref{2}.  After a few sucessful implicit time steps, $\Delta$ is large and therefore the algorithm becomes like Newton-Rapshon. In particular, the convergence is quadratic around the solution. \par
+	I accommodate algebraic equations by setting $\Delta$ to $+\infty$ along these coordinates.
+	\paragraph{Relation with other methods.} 	The method actually corresponds to a method used in he fluid dynamics literature. In this context, it is called the Pseudo-Transient Continuation method, and is denoted $\Psi tc$. Formal conditions for the convergence of the algorithm are given in  \citet{kelley1998convergence}.\par
+	The algorithm with $I=1$ and $\Delta$ constant corresponds to \citet{achdou2014heterogeneous}. They prove the convergence of this algorithm for models in partial equilibrium. Allowing $I > 1$ and adjusting $\Delta$  are important to ensure convergence in general equilibrium, which are non linear.
 
-	\paragraph{Writing Finite Difference Schemes.}
-	I now give some heuristics to write correctly the finite difference scheme $F$ given the system of PDEs characterizing some economic model.\par
-	The goal is to write the function $F$ so that the implicit Euler method satisfies the convergence conditions of Barles-Souganadis theorem as much as possible. In particular,
+	\paragraph{Writing Finite Difference Schemes.} It is important to write correctly the finite difference scheme $F$. A good heuristic is to write it so that the implicit Euler method satisfies the convergence conditions of Barles-Souganadis theorem. In particular,
 	\begin{itemize}
 		\item Upwind first derivatives to make the scheme monotonous (for instance see \citet{achdou2014heterogeneous})
-		\item Write the function $F$ so that $\dot{Y}$ would appear as such (i.e. not multiplied by some parameters). For instance, a typical PDE for the price dividend ratio should be written
+		\item Write each PDE as a no arbitrage condition for a particular asset. Denoting $p$ the price dividend ratio:
 		\begin{align*}
 			0 &= p (\frac{1}{p} + E[\frac{dD}{D}] + E[\frac{dp}{p}] + \sigma[\frac{dp}{dp}]\sigma[\frac{dD}{dD}] - r - \kappa(\sigma[\frac{dp}{dp}] + \sigma[\frac{dD}{D}]))
 		\end{align*}
-		\item  When solving a system of PDEs, use the same economic quantities across the different equations. This ensures that the time step is comparable across different equations. For instance use the wealth / consumption of each agent in heterogeneous agent models.
 	\end{itemize}
 	\bibliography{bib}
 	\bibliographystyle{aer}
