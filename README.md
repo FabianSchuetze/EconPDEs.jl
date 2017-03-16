@@ -10,7 +10,7 @@ This package proposes a new, fast, and robust algorithm to solve economic models
 
 
 More precisely, the package includes 
-1. a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations. I explain why the algorithm is fast and robust [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
+1. a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations. I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
 
 2. a higher-level function `solve` to solve economics models that uses `Ψtc` in the background. The goal is to solve a variety of well-known economic models in continuous time through a common framework. The function directly solves
 	- Asset pricing model with *time varying habit* (Campbell Cochrane (1999), Wachter (2005))
