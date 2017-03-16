@@ -10,7 +10,8 @@ This package proposes a new, fast, and robust algorithm to solve economic models
 
 
 More precisely, the package includes 
-1. a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations
+1. a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations. I explain why the algorithm is fast and robust [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
+
 2. a higher-level function `solve` to solve economics models that uses `Ψtc` in the background. The goal is to solve a variety of well-known economic models in continuous time through a common framework. The function directly solves
 	- Asset pricing model with *time varying habit* (Campbell Cochrane (1999), Wachter (2005))
 	- Asset pricing model with *long run risk* (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
@@ -32,7 +33,6 @@ The function `Ψtc` allows to solve systems of PDEs + eventual algebraic equatio
  - The option `inner_iterations` (default to `10`) specifies the number of inner Newton-Raphson iterations. 
  - The option `autodiff` (default to `true`) specifies that the Jacobian is evaluated using automatic differentiation.
 
- The algorithm underlying this PDE solver is explained in details [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
 
 
 # `solve` solves  economic models
