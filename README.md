@@ -16,6 +16,8 @@ More precisely, the package includes
 	- Asset pricing model with *long run risk* (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
 	- Asset pricing model with *heterogeneous agents* (Garleanu Panageas (2015), DiTella (2016))
 
+You can also use `solve` to solve a new model. You just need to write a few functions that specify the model. Examples can be found in the folder `src/models`.
+
 
 # `Ψtc` solves systems of PDES
 The function `Ψtc` allows to solve systems of PDEs + eventual algebraic equations.
