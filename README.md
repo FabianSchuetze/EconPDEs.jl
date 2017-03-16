@@ -45,6 +45,8 @@ Examples of these functions can be found in the folder `src/models`. I have code
 - Long Run Risk Model of Bansal Yaron (2004)
 - Heterogeneous Agent Models of Garleanu Panageas (2015) and DiTella (2016)
 
+Each model is coded as a system of PDEs. Each PDE corresponds to the no-arbitrage condition for an asset.
+
 
 ## Examples
 
