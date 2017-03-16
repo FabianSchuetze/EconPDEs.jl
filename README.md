@@ -43,11 +43,10 @@ To `solve` a economic model, the user only needs to define three functions.
 Examples of these functions can be found in the folder `src/models`. I have coded:
 - Asset pricing model with time varying habit (Campbell Cochrane (1999), Wachter (2005))
 - Asset pricing model with long run risk (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
-- Heterogeneous Agent Models (Garleanu Panageas (2015), DiTella (2016))
+- Asset pricing model with heterogeneous agents (Garleanu Panageas (2015), DiTella (2016))
+- Consumption - saving problem with idiosyncratic income risk (Wang Wang Yang (2016))
 
 Each model is coded as a system of PDEs. Each PDE corresponds to the no-arbitrage condition for an asset.
-
-
 
 
 ```julia
