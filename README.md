@@ -40,7 +40,7 @@ The function `Ψtc` allows to solve systems of PDEs + eventual algebraic equatio
 The function `solve` is a higher-level function to solve economic models. In the background, the function still relies on the PDE solver `Ψtc`. It is a higher-level function in the sense that it reduces the boilerplate needed to solve models (in particular, the model automatically computes the finite difference derivatives through upwinding).
 
 To `solve` a economic model, the user only needs to define a type and three functions.
-- A type that stores the parameters of the models. For the case of Campbell Cochrane (1999),
+1. A type that stores the parameters of the models. For the case of Campbell Cochrane (1999),
 	```julia
 	type CampbellCochraneModel  <: EconPDEModel
 	    # consumption process parameters
@@ -60,7 +60,7 @@ To `solve` a economic model, the user only needs to define a type and three func
 	    CampbellCochraneModel(μ, σ, γ, ρ, κs, b)
 	end
 	```
-- a `Stategrid` function that creates the state space grid. For the case of Campbell Cochrane (1999), I create a logspaced grid for habit between `log(-300)` and `1`
+2. a `Stategrid` function that creates the state space grid. For the case of Campbell Cochrane (1999), I create a logspaced grid for habit between `log(-300)` and `1`
 	```julia
 	function StateGrid(m::CampbellCochraneModel; smin = -300.0, n = 1000)
 	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
@@ -71,19 +71,19 @@ To `solve` a economic model, the user only needs to define a type and three func
 	    StateGrid(s = s)
 	end
 	```
-- an `initialize` function that returns an initial guess. In my experience, the pseudo transient algorithm is robust to the exact initial condition so I simply take a vector of ones:
+3. an `initialize` function that returns an initial guess. In my experience, the pseudo transient algorithm is robust to the exact initial condition so I simply take a vector of ones:
 
 	```julia
 	function initialize(m::CampbellCochraneModel, grid::StateGrid)
 	    fill(1.0, size(grid)...)
 	end
 	```
-- a `pde` function that returns the system of PDEs. This function encodes the model. The function takes as argument the model `m`, the grid `grid`, a current guess for the solution `y`, a tuple corresponding to the grid coordinates `ituple`, and a tuple corresponding to the drift of state varaibles at this position `idrift`. It returns  a tuple of three terms.
+4. a `pde` function that returns the system of PDEs. This function encodes the model. The function takes as argument the model `m`, the grid `grid`, a current guess for the solution `y`, a tuple corresponding to the grid coordinates `ituple`, and a tuple corresponding to the drift of state varaibles at this position `idrift`. It returns  a tuple of three terms.
 	1. A tuple corresponding to the value of the PDEs at this grid point.
 	2. A tuple corresponding to the drift of state variables at this grid point (used for upwinding).
 	3. A dictionary from symbols to values. This dictionary simply stores side functions computed while writing the PDE.
 
-	This is the `pde` function for the case of Campbell Cochrane (1999),
+	This is the `pde` function for the Campbell Cochrane (1999) model:
 	```julia
 	function pde(m::CampbellCochraneModel, grid, y, ituple, idrift = (0.0, 0.0))
 	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
@@ -116,7 +116,7 @@ To `solve` a economic model, the user only needs to define a type and three func
 	```
 
 
-Given these definitions, we can now solve for the Campbell Cochrane (1999) model
+Given these definitions, one can simply call the function `solve` to solve the Campbell Cochrane (1999) model
 
 ```julia
 using EconPDEs 
