@@ -5,13 +5,13 @@
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
 
-Economic models can be hard to solve numerically. This package implements a fast and robust algorithm to solve them. I demonstrate the interest of this algorithm by solving a variety of well-known economic models in continuous time. This package was developed while writing my PhD thesis.
+This package implements a fast and robust algorithm to solve economic models in continuous time. I demonstrate the interest of this algorithm by solving a variety of well-known economic models in continuous time. This package was developed while writing my PhD thesis.
 
 
 
 More precisely, the package includes 
 1. a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations
-2. a higher-level function `solve` to solve  economics models. The function directly solves
+2. a higher-level function `solve` to solve  economics models that uses `Ψtc` in the background. The function directly solves
 	- Asset pricing model with *time varying habit* (Campbell Cochrane (1999), Wachter (2005))
 	- Asset pricing model with *long run risk* (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
 	- Asset pricing model with *heterogeneous agents* (Garleanu Panageas (2015), DiTella (2016))
