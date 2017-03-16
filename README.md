@@ -10,9 +10,10 @@ This package presents a fast and robust algorithm to solve economic models in co
 More precisely, the package includes 
 1. a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations
 2. a higher-level function `solve` to solve  economics models. The function directly solves
-	- Asset pricing model with *time varying habit (Campbell Cochrane (1999), Wachter (2005)*)
-	- Asset pricing model with *long run risk (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009)*)
-	- Asset pricing model with *heterogeneous agents (Garleanu Panageas (2015), DiTella (2016)*)
+	- Asset pricing model with *time varying habit* (Campbell Cochrane (1999), Wachter (2005))
+	- Asset pricing model with *long run risk* (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
+	- Asset pricing model with *heterogeneous agents* (Garleanu Panageas (2015), DiTella (2016))
+	Each model is coded as a system of PDEs, where each PDE corresponds to the no-arbitrage condition for an asset.
 
 
 # `Ψtc` solves systems of PDES
@@ -43,15 +44,7 @@ To `solve` a economic model, the user only needs to define three functions.
 	2. the second term is a tuple for the drift of state variables (used to upwind the scheme).
 	3. the third term is a dictionary from symbols to value. It is not used to solve the model, but it allows to compute interesting quantities beyond the solution of the PDEs.
 
-Examples of these functions can be found in the folder `src/models`. I have coded:
-- Asset pricing model with *time varying habit (Campbell Cochrane (1999), Wachter (2005)*)
-- Asset pricing model with *long run risk (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009)*)
-- Asset pricing model with *heterogeneous agents (Garleanu Panageas (2015), DiTella (2016)*)
-- Consumption - saving problem with idiosyncratic income risk (Wang Wang Yang (2016))
-
-Each model is coded as a system of PDEs. Each PDE corresponds to the no-arbitrage condition for an asset.
-
-
+Examples of these functions can be found in the folder `src/models`. 
 ```julia
 using EconPDEs 
 
