@@ -5,11 +5,9 @@
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
 
-This package proposes a new, fast, and robust algorithm to solve economic models in continuous time. This package was developed while writing my PhD thesis.
+This package proposes a new, fast, and robust algorithm to solve economic models in continuous time.
 
-
-
-More precisely, the package includes 
+The package includes 
 1. a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations. I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
 
 2. a higher-level function `solve` to solve economics models that uses `Ψtc` in the background. The goal is to solve a variety of well-known economic models in continuous time through a common framework. The function directly solves
