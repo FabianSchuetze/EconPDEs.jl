@@ -15,17 +15,17 @@
 	This note details how to solve systems of PDEs + algebraic equations associated with economic models in continuous time.
 
 	\paragraph{Algorithm.}
-	I propose to solve the system corresponding to economic models using the Pseudo-Transient Continuation (denoted $\Psi tc$) method, used in the fluid dynamics literature. 
+	I propose to solve the non linear system corresponding to economic models using the Pseudo-Transient Continuation (denoted $\Psi tc$) method. This method is used in the fluid dynamics literature. 
 	\par Formal conditions for the convergence of the algorithm are given in  \citet{kelley1998convergence}, but I now derive an intuition for the algorithm.\par
-	Denote $Y$  the solution and denote $F(Y) = 0$ the finite difference scheme corresponding to a model. The existing literature solves for $Y$ using using one of the two methods:
+	Denote $Y$  the solution and denote $F(Y) = 0$ the finite difference scheme corresponding to a model. The existing literature in economics solves for $Y$ using using one of the two methods:
 
 	\begin{enumerate}
 		\item Non linear solver for $F (Y ) = 0$. Updates take the form
 		\begin{align*}
 			0 &= F(y_{t}) + J_{F}(y_t) (y_{t+1} - y_t)
 		\end{align*}
-		The method converges only if the initial guess is sufficiently close to the solution. \footnote{For instance, see \citet{campbell1999force}.}
-		\item ODE solver for $F(Y) = \dot{Y}$. The solution of $F(Y)=0$ is obtained with $T\rightarrow +\infty$. \footnote{For instance, see \citet{ditellabalance}, \citet{silva2015risk}.}
+		The method converges only if the initial guess is sufficiently close to the solution.\footnote{See, for instance, \citet{campbell1999force}.}
+		\item ODE solver for $F(Y) = \dot{Y}$. The solution of $F(Y)=0$ is obtained with $T\rightarrow +\infty$. \footnote{See, for instance, \citet{ditellabalance}, \citet{silva2015risk}.}
 		With a simple explicit Euler method, updates take the form
 		\begin{align*}
 			0&= F(y_t) - \frac{1}{\Delta} (y_{t+1} -y_{t})
