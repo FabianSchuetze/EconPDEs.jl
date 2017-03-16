@@ -5,7 +5,7 @@
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
 
-Asset pricing models can be hard to solve numerically. This package implements a fast and robust algorithm to solve economic models in continuous time. I use this common framework to solve a variety of well-known economic models in continuous time. This package was developed while writing my PhD thesis.
+Economic models can be hard to solve numerically. This package implements a fast and robust algorithm to solve them. I demonstrate the interest of this algorithm by solving a variety of well-known economic models in continuous time. This package was developed while writing my PhD thesis.
 
 
 
