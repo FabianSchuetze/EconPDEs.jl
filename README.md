@@ -10,12 +10,12 @@ This package proposes a new, fast, and robust algorithm to solve economic models
 The package includes 
 1. a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations. I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
 
-2. a higher-level function `solve` to solve economics models that uses `Ψtc` in the background. The goal is to solve a variety of well-known economic models in continuous time through a common framework. The function directly solves
+2. a higher-level function `solve` to solve economics models that uses `Ψtc` in the background. The function allows to solve directly a variety of well-known economic models in continuous time through a common framework:
 	- Asset pricing model with *time varying habit* (Campbell Cochrane (1999), Wachter (2005))
 	- Asset pricing model with *long run risk* (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
 	- Asset pricing model with *heterogeneous agents* (Garleanu Panageas (2015), DiTella (2016))
 
-You can also use `solve` to solve a new model. You just need to write a few functions that specify the model. Examples can be found in the folder `src/models`.
+You can also use `solve` for new models. You just need to write a few functions, following the below.
 
 
 # `Ψtc` solves systems of PDES
