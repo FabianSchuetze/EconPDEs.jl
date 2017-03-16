@@ -9,7 +9,10 @@ This package presents a fast and robust algorithm to solve economic models in co
 
 More precisely, the package includes 
 1. a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations
-2. a higher-level function `solve` to solve  economics models
+2. a higher-level function `solve` to solve  economics models. The function directly solves
+	- Asset pricing model with *time varying habit (Campbell Cochrane (1999), Wachter (2005)*)
+	- Asset pricing model with *long run risk (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009)*)
+	- Asset pricing model with *heterogeneous agents (Garleanu Panageas (2015), DiTella (2016)*)
 
 
 # `Ψtc` solves systems of PDES
