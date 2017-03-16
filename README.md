@@ -41,84 +41,59 @@ To `solve` a economic model, the user only needs to define three functions.
 	3. the third term is a dictionary from symbols to value. It is not used to solve the model, but it allows to compute interesting quantities beyond the solution of the PDEs.
 
 Examples of these functions can be found in the folder `src/models`. I have coded:
-- Habit Model of Campbell Cochrane (1999)
-- Long Run Risk Model of Bansal Yaron (2004)
-- Heterogeneous Agent Models of Garleanu Panageas (2015) and DiTella (2016)
+- Asset pricing model with time varying habit (Campbell Cochrane (1999), Wachter (2005))
+- Asset pricing model with long run risk (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
+- Heterogeneous Agent Models (Garleanu Panageas (2015), DiTella (2016))
 
 Each model is coded as a system of PDEs. Each PDE corresponds to the no-arbitrage condition for an asset.
 
 
-## Examples
 
-### Campbell Cochrane (1999)
-Asset pricing model with time varying habit
+
 ```julia
-using EconPDEs
+using EconPDEs 
+
+# Campbell Cochrane (1999)
 m = CampbellCochraneModel()
 grid = StateGrid(m)
 y0 = initialize(m, grid)
 result, distance = solve(m, grid, y0)
-
-# plot results
 using Plots
 plotly()
 plot(exp(grid[:s]), result[:p])
-```
 
-Wachter (2005) calibration:
-```julia
+# Wachter (2005) calibration:
 m = CampbellCochraneModel(μ = 0.022, σ = 0.0086, γ = 2.0, ρ = 0.073, κs = 0.116, b = 0.011 * 4)
 grid = StateGrid(m)
 y0 = initialize(m, grid)
 result, distance = solve(m, grid, y0)
-```
 
 
-
-### Bansal Yaron (2004)
-Asset pricing model with time varying drift and volatility
-
-```julia
-using EconPDEs
+# Bansal Yaron (2004)
 m = BansalYaronModel()
 grid = StateGrid(m)
 y0 = initialize(m, grid)
 result, distance = solve(m, grid, y0)
-
-# plot results
 using Plots
 plotly()
 surface(grid[:μ], grid[:σ], result[:p])
-```
 
-Bansal, Kiku, Yaron (2009) calibration:
-```julia
-using EconPDEs
+# Bansal, Kiku, Yaron (2009) calibration
 m = BansalYaronModel(μbar = 0.018, νc = 0.025, κμ = 0.3, κσ = 0.012, νμ = 0.0114, νσ = 0.189, ρ = 0.0132, γ = 7.5, ψ = 1.5)
 grid = StateGrid(m)
 y0 = initialize(m, grid)
 result, distance = solve(m, grid, y0)
-```
 
-### Garleanu Panageas (2015)
-Asset pricing model with heterogeneous agents
-```julia
-using EconPDEs
+# Garleanu Panageas (2015)
 m = GarleanuPanageasModel()
 grid = StateGrid(m)
 y0 = initialize(m, grid)
 result, distance = solve(m, grid, y0)
-
-# plot results
 using Plots
 plotly()
 plot(grid[:x], result[:p])
-```
 
-### DiTella (2016)
-Asset pricing model with heterogeneous agents and time varying volatility
-
-```julia
+# DiTella (2016)
 using EconPDEs
 m = DiTellaModel()
 grid = StateGrid(m)
@@ -126,24 +101,16 @@ y0 = initialize(m, grid)
 is_algebraic = fill(false, size(y0)...)
 is_algebraic[:, :, 3] = true
 result, distance = solve(m, grid, y0, is_algebraic = is_algebraic)
-
-# plot results
 using Plots
 plotly()
 surface(grid[:x], grid[:ν], result[:p])
-```
 
-
-### Wang Wang Yang (2016)
-Consumption - saving problem with idiosyncratic income risk
-```julia
-using EconPDEs
+# Wang Wang Yang (2016): Consumption - saving problem with idiosyncratic income risk
 ap = WangWangYangModel()
 grid = StateGrid(ap)
 y0 = initialize(ap, grid)
 result, distance = solve(ap, grid, y0)
 
-# plot results
 using Plots
 plotly()
 plot(grid[:w], result[:p])
