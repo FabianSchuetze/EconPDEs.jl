@@ -4,7 +4,9 @@
 ```julia
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
-This package presents a fast and robust algorithm to solve economic models in continuous time.
+
+Asset pricing models can be hard to solve numerically. This package implements a fast and robust algorithm to solve economic models in continuous time. I use this common framework to solve a variety of well-known economic models in continuous time. This package was developed while writing my PhD thesis.
+
 
 
 More precisely, the package includes 
@@ -14,7 +16,6 @@ More precisely, the package includes
 	- Asset pricing model with *long run risk* (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
 	- Asset pricing model with *heterogeneous agents* (Garleanu Panageas (2015), DiTella (2016))
 
-Asset pricing models can be hard to solve numerically. This package proposes a fast and robust algorithm to solve economic models in continuous time. This package was developed while writing my PhD thesis.
 
 # `Ψtc` solves systems of PDES
 The function `Ψtc` allows to solve systems of PDEs + eventual algebraic equations.
