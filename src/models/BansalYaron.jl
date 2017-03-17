@@ -40,7 +40,7 @@ function StateGrid(m::BansalYaronModel; μn = 30, σn = 30)
 end
 
 function initialize(m::BansalYaronModel, grid::StateGrid)
-    fill(1.0, size(grid)...)
+    fill(1.0, size(grid))
 end
 
 function pde(m::BansalYaronModel, grid, y, ituple, idrift = (0.0, 0.0))

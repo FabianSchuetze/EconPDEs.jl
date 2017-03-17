@@ -73,7 +73,7 @@ To `solve` a economic model, the user only needs to define a type and three func
 
 	```julia
 	function initialize(m::CampbellCochraneModel, grid::StateGrid)
-	    fill(1.0, size(grid)...)
+	    fill(1.0, size(grid))
 	end
 	```
 4. a `pde` function that returns the system of PDEs. This function encodes the model. The function takes as argument the model `m`, the grid `grid`, a current guess for the solution `y`, a tuple corresponding to the grid coordinates `ituple`, and a tuple corresponding to the drift of state varaibles at this position `idrift`. It returns  a tuple of three terms.
