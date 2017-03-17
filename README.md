@@ -45,11 +45,11 @@ To `solve` a economic model, the user only needs to define a type and three func
 	    μ::Float64 
 	    σ::Float64
 
-	    # utility
+	    # utility parameters
 	    γ::Float64
 	    ρ::Float64
 
-	    # habit
+	    # habit parameters
 	    κs::Float64
 	    b::Float64
 	end
@@ -109,7 +109,7 @@ To `solve` a economic model, the user only needs to define a type and three func
 
 	    # PDE
 	    out = p * (1 / p + μ + μp + σp * σ - r - κ * (σ + σp))
-	    return out, (μs,), (:p => p, :κ => κ, :λ => λ, :r => r, :σp => σp, :μs => μs, :σs => σs)
+	    return out, (μs,), (:p => p, :κ => κ, :r => r)
 	end
 	```
 
