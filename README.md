@@ -22,8 +22,8 @@ You can also use `solve` for new models. You just need to write a few functions,
 The function `Ψtc` allows to solve systems of PDEs + eventual algebraic equations.
 
  The solver `Ψtc` has the following syntax. 
- - The first argument is the model, given as a function `F!(y, out)`.
- - The second argument is an initial value for `y`
+ - The first argument is the model, given as a function `F!(y, out)`, which transforms `out` in place.
+ - The second argument is an array of arbitrary dimension for the initial guess for `y`
  - The option `is_algebraic` (defaults to an array of `false`) is an array indicating the eventual algebraic equations (typically market clearing conditions).
 
  Some options control the algorithm:
