@@ -35,7 +35,7 @@ function StateGrid(m::GarleanuPanageasModel; n = 200)
 end
 
 function initialize(m::GarleanuPanageasModel, grid::StateGrid)
-    fill(1.0, size(grid)..., 4)
+    (fill(1.0, size(grid)), fill(1.0, size(grid)), fill(1.0, size(grid)), fill(1.0, size(grid)))
 end
 
 function pde(m::GarleanuPanageasModel, grid, y, ituple, idrift = (0.0, 0.0))

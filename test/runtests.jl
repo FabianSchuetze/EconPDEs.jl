@@ -28,9 +28,7 @@ result, distance = solve(m, grid, y0)
 m = DiTellaModel()
 grid = StateGrid(m ; xn = 10, νn = 3)
 y0 = initialize(m, grid)
-is_algebraic = fill(false, size(y0)...)
-is_algebraic[:, :, 3] = true
-result, distance = solve(m, grid, y0, is_algebraic = is_algebraic)
+result, distance = solve(m, grid, y0)
 @test distance <= 1e-5
 
 

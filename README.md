@@ -170,9 +170,7 @@ using EconPDEs
 m = DiTellaModel()
 grid = StateGrid(m)
 y0 = initialize(m, grid)
-is_algebraic = fill(false, size(y0)...)
-is_algebraic[:, :, 3] = true
-result, distance = solve(m, grid, y0, is_algebraic = is_algebraic)
+result, distance = solve(m, grid, y0)
 using Plots
 plotly()
 surface(grid[:x], grid[:ν], result[:p])

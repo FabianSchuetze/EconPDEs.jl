@@ -32,7 +32,7 @@ function StateGrid(m::DiTellaModel; xn = 80, νn = 10)
 end
 
 function initialize(m::DiTellaModel, grid::StateGrid)
-    fill(1.0, size(grid)..., 3)
+    (fill(1.0, size(grid)), fill(1.0, size(grid)), fill(1.0, size(grid)))
 end
 
 function pde(m::DiTellaModel, grid, y, ituple, idrift = (0.0, 0.0))
@@ -75,3 +75,5 @@ function pde(m::DiTellaModel, grid, y, ituple, idrift = (0.0, 0.0))
 
   return (out1, out2, out3), (μX, μν), (:p => p, :pA => pA, :pB => pB, :κ => κ, :r => r, :μX => μX, :σX => σX)
 end
+
+is_algebraic(m::DiTellaModel) = (false, false, true)

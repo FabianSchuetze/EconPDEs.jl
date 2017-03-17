@@ -80,6 +80,8 @@ Base.eachindex(grid::StateGrid) = CartesianRange(size(grid))
     Expr(:call, :tuple, [:(length(grid.x[$i])) for i in 1:N]...)
 end
 
+Base.ndims(grid) = length(size(grid))
+
 function Base.getindex{N}(grid::StateGrid{N}, args...)
     getindex(grid, CartesianIndex{N}(args...))
 end
@@ -161,6 +163,7 @@ end
 function hjb!{N1, N, T}(apm::EconPDEModel, grid::StateGrid{N1}, fy::NTuple{N, T}, ydot::Array)
     for i in eachindex(grid)
         outi, drifti, othersi = pde(apm, grid, fy, i.I)
+        # upwind
         outi, drifti, othersi = pde(apm, grid, fy, i.I, drifti)
         _setindex!(ydot, outi, i)
     end
@@ -173,7 +176,6 @@ end
 
 _setindex!(ydot, outi, i) = setindex!(ydot, outi, i)
 
-
 #========================================================================================
 
 Solve
@@ -181,10 +183,23 @@ Solve
 ========================================================================================#
 
 function solve(apm::EconPDEModel, grid::StateGrid, y0; kwargs...)
-    y, distance = Ψtc((y, ydot) -> hjb!(apm, grid, y, ydot), y0; kwargs...)
+    y, distance = Ψtc((y, ydot) -> hjb!(apm, grid, y, ydot), _concatenate(y0); is_algebraic = _make_algebraic(apm, grid), kwargs...)
     a = create_dictionary(apm, grid, y)
     return a, distance
 end
+
+_concatenate(y::Array) = y
+_concatenate{T<:Array}(y::NTuple{T}) = cat(ndims(y[1]) + 1, y...)
+
+
+function n_output(apm::EconPDEModel)
+    y0 = initialize(apm, StateGrid(apm))
+    typeof(y0) <: NTuple ? length(y0) : 1
+end
+
+is_algebraic(apm::EconPDEModel) = (fill(false, n_output(apm))...)
+_make_algebraic(apm, grid) = cat(ndims(grid) + 1, (fill(v, size(grid)) for v in is_algebraic(apm))...)
+
 
 function create_dictionary{N1}(apm, grid::StateGrid{N1}, y)
     N = div(length(y), prod(size(grid)))
