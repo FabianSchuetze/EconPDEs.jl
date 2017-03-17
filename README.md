@@ -58,7 +58,7 @@ To `solve` a economic model, the user only needs to define a type and three func
 	    CampbellCochraneModel(μ, σ, γ, ρ, κs, b)
 	end
 	```
-2. a `Stategrid` function that creates the state space grid. For the case of Campbell Cochrane (1999), I create a logspaced grid for habit between `log(-300)` and `1`
+2. a `Stategrid` function that creates the state space grid. For the case of Campbell Cochrane (1999), I create a log-spaced grid:
 	```julia
 	function StateGrid(m::CampbellCochraneModel; smin = -300.0, n = 1000)
 	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
