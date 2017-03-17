@@ -109,7 +109,7 @@ To `solve` a economic model, the user only needs to define a type and three func
 
 	    # PDE
 	    out = p * (1 / p + μ + μp + σp * σ - r - κ * (σ + σp))
-	    return out, (μs,), (:p => p, :κ => κ, :r => r)
+	    return out, μs, (:p => p, :κ => κ, :r => r)
 	end
 	```
 

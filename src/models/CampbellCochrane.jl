@@ -65,5 +65,5 @@ function pde(m::CampbellCochraneModel, grid, y, ituple, idrift = (0.0, 0.0))
 
     # PDE
     out = p * (1 / p + μ + μp + σp * σ - r - κ * (σ + σp))
-    return out, (μs,), (:p => p, :κ => κ, :λ => λ, :r => r, :σp => σp, :μs => μs, :σs => σs)
+    return out, μs, (:p => p, :κ => κ, :λ => λ, :r => r, :σp => σp, :μs => μs, :σs => σs)
 end

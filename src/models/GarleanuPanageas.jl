@@ -49,11 +49,11 @@ function pde(m::GarleanuPanageasModel, grid, y, ituple, idrift = (0.0, 0.0))
   # volatility of X, pA, pB, ϕ1, ϕ2, CA, CB and market price of risk κ
   Γ = 1 / (x / γA + (1 - x) / γB)
   p = x * pA + (1 - x) * pB
-  σX = σ * x * (Γ / γA - 1) / (1 + Γ * x * (1 - x) / (γA * γB) * ((1 - γB * ψB) / (ψB - 1) * (pBx / pB) - (1 - γA * ψA) / (ψA - 1) * (pAx / pA)))
-  σpA = pAx / pA * σX
-  σpB = pBx / pB * σX 
-  σϕ1 = ϕ1x / ϕ1 * σX
-  σϕ2 = ϕ2x / ϕ2 * σX
+  σx = σ * x * (Γ / γA - 1) / (1 + Γ * x * (1 - x) / (γA * γB) * ((1 - γB * ψB) / (ψB - 1) * (pBx / pB) - (1 - γA * ψA) / (ψA - 1) * (pAx / pA)))
+  σpA = pAx / pA * σx
+  σpB = pBx / pB * σx 
+  σϕ1 = ϕ1x / ϕ1 * σx
+  σϕ2 = ϕ2x / ϕ2 * σx
   κ = Γ * (σ - x * (1 - γA * ψA) / (γA * (ψA - 1)) * σpA - (1 - x) * (1 - γB * ψB) / (γB * (ψB - 1)) * σpB)
   σCA = κ / γA + (1 - γA * ψA) / (γA * (ψA - 1)) * σpA
   σCB = κ / γB + (1 - γB * ψB) / (γB * (ψB - 1)) * σpB
@@ -64,11 +64,11 @@ function pde(m::GarleanuPanageasModel, grid, y, ituple, idrift = (0.0, 0.0))
   r =  ρ + 1 / (ψA * x  + ψB * (1 - x))  * (μ - x * mcA - (1 - x) * mcB - δ * ((νA / pA + (1 - νA) / pB) * (ϕ1 + ϕ2) - 1))
   μCA = ψA * (r - ρ) + mcA
   μCB = ψB * (r - ρ) + mcB
-  μX = x * (μCA - δ - μ) + δ * νA / pA * (ϕ1 + ϕ2) - σ * σX  
-  μpA = pAx / pA * μX + 0.5 * pAxx / pA * σX^2
-  μpB = pBx / pB * μX + 0.5 * pBxx / pB * σX^2
-  μϕ1 = ϕ1x / ϕ1 * μX + 0.5 * ϕ1xx / ϕ1 * σX^2
-  μϕ2 = ϕ2x / ϕ2 * μX + 0.5 * ϕ2xx / ϕ2 * σX^2
+  μx = x * (μCA - δ - μ) + δ * νA / pA * (ϕ1 + ϕ2) - σ * σx  
+  μpA = pAx / pA * μx + 0.5 * pAxx / pA * σx^2
+  μpB = pBx / pB * μx + 0.5 * pBxx / pB * σx^2
+  μϕ1 = ϕ1x / ϕ1 * μx + 0.5 * ϕ1xx / ϕ1 * σx^2
+  μϕ2 = ϕ2x / ϕ2 * μx + 0.5 * ϕ2xx / ϕ2 * σx^2
   
   # PDE
   out1 = pA * (1 / pA + (μCA - δ) + μpA + σCA * σpA - r - κ * (σpA + σCA))
@@ -76,5 +76,5 @@ function pde(m::GarleanuPanageasModel, grid, y, ituple, idrift = (0.0, 0.0))
   out3 = ϕ1 * (B1 * ω / ϕ1 + (μ - δ - δ1) + μϕ1 + σ * σϕ1 - r - κ * (σϕ1 + σ))
   out4 = ϕ2 * (B2 * ω / ϕ2 + (μ - δ - δ2) + μϕ2 + σ * σϕ2 - r - κ * (σϕ2 + σ))
 
-  return (out1, out2, out3, out4), (μX,), (:p => p, :pA => pA, :pB => pB, :κ => κ, :r => r, :μx => μX, :σx => σX)
+  return (out1, out2, out3, out4), μx, (:p => p, :pA => pA, :pB => pB, :κ => κ, :r => r, :μx => μx, :σx => σx)
 end
