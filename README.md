@@ -10,10 +10,11 @@ This package proposes a new, fast, and robust algorithm to solve economic models
 
 
 # `Ψtc` solves systems of PDES
-The package includes a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations. I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
+The package includes a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations.
+Formally, denote `F` the finite difference scheme associated with the PDE. The function helps to find a solution `y` that solves the finite difference scheme, i.e. `F(y) = 0`. 
 
  The solver `Ψtc` has the following syntax. 
- - The first argument is the model, given as a function `F!(y, out)`, which transforms `out` in place.
+ - A function `F!(y, out)` which transforms `out = F(y)` in place.
  - The second argument is an array of arbitrary dimension for the initial guess for `y`
  - The option `is_algebraic` (defaults to an array of `false`) is an array indicating the eventual algebraic equations (typically market clearing conditions).
 
@@ -22,7 +23,7 @@ The package includes a fast and robust function `Ψtc` to solve systems of PDEs 
  - The option `inner_iterations` (default to `10`) specifies the number of inner Newton-Raphson iterations. 
  - The option `autodiff` (default to `true`) specifies that the Jacobian is evaluated using automatic differentiation.
 
-
+ I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
 
 # `solve` solves  economic models
 The function `solve` is a higher-level function to solve economic models. In the background, the function still relies on the PDE solver `Ψtc`. It is a higher-level function in the sense that it reduces the boilerplate needed to solve models (in particular, the model automatically computes the finite difference derivatives through upwinding).
