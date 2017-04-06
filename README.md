@@ -32,7 +32,7 @@ The function allows to solve directly a variety of well-known economic models in
 - Asset pricing model with long run risk (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
 - Asset pricing model with heterogeneous agents (Garleanu Panageas (2015), DiTella (2016))
 
-To `solve` a economic model, the user only needs to define a type and three functions.
+To `solve` a economic model, the user only needs to define a type and three functions. I go through these definitions for the Campbell Cochrane (1999) model.
 1. A type that stores the parameters of the models. For the case of Campbell Cochrane (1999),
 	```julia
 	type CampbellCochraneModel  <: EconPDEModel
