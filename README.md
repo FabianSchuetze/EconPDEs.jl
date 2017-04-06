@@ -9,7 +9,7 @@ This package proposes a new, fast, and robust algorithm to solve economic models
 
 
 
-# `Ψtc` solves finite difference schemes associated with a systems of PDEs
+# `Ψtc` solves finite difference schemes
 The package includes a fast and robust function `Ψtc` to solve systems of PDEs/DAEs. Formally, denote `F` the finite difference scheme associated with the PDE. The function finds `y` such that `F(y) = 0`. 
 
  The solver `Ψtc` has the following syntax. 
