@@ -10,7 +10,8 @@ This package proposes a new, fast, and robust algorithm to solve economic models
 
 
 # `Ψtc` solves finite difference schemes
-Denote `F` the finite difference scheme corresponding to a PDE. Solving the PDE corresponds to finding `y` such that `F(y) = 0`, i.e. solving a non linear system. `Ψtc` is a non linear solver especially written for these finite difference schemes.
+Denote `F` the finite difference scheme corresponding to a PDE. Solving the PDE corresponds to finding `y` such that `F(y) = 0`, i.e. solving a non linear system. `Ψtc` is a non linear solver especially written for these finite difference schemes.  I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
+
 
  The solver `Ψtc` has the following syntax. 
  - The first argument is a function `F!(y, out)` which transforms `out = F(y)` in place.
@@ -22,7 +23,6 @@ Denote `F` the finite difference scheme corresponding to a PDE. Solving the PDE 
  - The option `inner_iterations` (default to `10`) specifies the number of inner Newton-Raphson iterations. 
  - The option `autodiff` (default to `true`) specifies that the Jacobian is evaluated using automatic differentiation.
 
- I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
 
 # `solve` solves  economic models
 The function `solve` is a higher-level function to solve economic models. In the background, the function still relies on the PDE solver `Ψtc`. It is a higher-level function in the sense that it reduces the boilerplate needed to solve models. In particular, the model automatically computes finite difference derivatives, and takes care of  upwinding the derivatives.
