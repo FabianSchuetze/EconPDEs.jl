@@ -25,7 +25,7 @@ Denote `F` the finite difference scheme corresponding to a PDE. Solving the PDE 
  I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
 
 # `solve` solves  economic models
-The function `solve` is a higher-level function to solve economic models. In the background, the function still relies on the PDE solver `Ψtc`. It is a higher-level function in the sense that it reduces the boilerplate needed to solve models (in particular, the model automatically computes the finite difference derivatives through upwinding).
+The function `solve` is a higher-level function to solve economic models. In the background, the function still relies on the PDE solver `Ψtc`. It is a higher-level function in the sense that it reduces the boilerplate needed to solve models. In particular, the model automatically computes finite difference derivatives, and takes care of  upwinding the derivatives.
 
 The function allows to solve directly a variety of well-known economic models in continuous time through a common framework:
 	- Asset pricing model with time varying habit (Campbell Cochrane (1999), Wachter (2005))
