@@ -7,19 +7,10 @@ Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 
 This package proposes a new, fast, and robust algorithm to solve economic models in continuous time.
 
-The package includes 
-1. a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations. I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
-
-2. a higher-level function `solve` to solve economics models that uses `Ψtc` in the background. The function allows to solve directly a variety of well-known economic models in continuous time through a common framework:
-	- Asset pricing model with *time varying habit* (Campbell Cochrane (1999), Wachter (2005))
-	- Asset pricing model with *long run risk* (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
-	- Asset pricing model with *heterogeneous agents* (Garleanu Panageas (2015), DiTella (2016))
-
-You can also use `solve` for new models. You just need to write a few functions, following the below.
 
 
 # `Ψtc` solves systems of PDES
-The function `Ψtc` allows to solve systems of PDEs + eventual algebraic equations.
+The package includes a fast and robust function `Ψtc` to solve systems of PDEs + algebraic equations. I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
 
  The solver `Ψtc` has the following syntax. 
  - The first argument is the model, given as a function `F!(y, out)`, which transforms `out` in place.
@@ -34,8 +25,12 @@ The function `Ψtc` allows to solve systems of PDEs + eventual algebraic equatio
 
 
 # `solve` solves  economic models
-
 The function `solve` is a higher-level function to solve economic models. In the background, the function still relies on the PDE solver `Ψtc`. It is a higher-level function in the sense that it reduces the boilerplate needed to solve models (in particular, the model automatically computes the finite difference derivatives through upwinding).
+
+The function allows to solve directly a variety of well-known economic models in continuous time through a common framework:
+	- Asset pricing model with time varying habit (Campbell Cochrane (1999), Wachter (2005))
+	- Asset pricing model with long run risk (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
+	- Asset pricing model with heterogeneous agents (Garleanu Panageas (2015), DiTella (2016))
 
 To `solve` a economic model, the user only needs to define a type and three functions.
 1. A type that stores the parameters of the models. For the case of Campbell Cochrane (1999),
