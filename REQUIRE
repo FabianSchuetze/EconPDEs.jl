@@ -1,5 +1,7 @@
-julia 0.4
+julia 0.5
 NLsolve
 Distributions
 Interpolations
 Compat
+Combinatorics
+NamedTuples 2.1

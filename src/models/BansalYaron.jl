@@ -23,7 +23,7 @@ function BansalYaronModel(;μbar = 0.018, νc = 0.027, κμ = 0.252, κσ = 0.15
     BansalYaronModel(μbar, νc, κμ, κσ, νμ, νσ, ρ, γ, ψ)
 end
 
-function StateGrid(m::BansalYaronModel; μn = 30, σn = 30)
+function state_grid(m::BansalYaronModel; μn = 30, σn = 30)
     μbar = m.μbar ; νc = m.νc ; κμ = m.κμ ; κσ = m.κσ ; νμ = m.νμ ; νσ = m.νσ ; ρ = m.ρ ; γ = m.γ ; ψ = m.ψ
 
     σ = sqrt(νμ^2 / (2 * κμ))
@@ -36,17 +36,17 @@ function StateGrid(m::BansalYaronModel; μn = 30, σn = 30)
     σmax = quantile(Normal(1.0, σ), 0.999)
     σs = collect(linspace(σmin, σmax, σn))
 
-    StateGrid(μ = μs, σ = σs)
+    @NT(μ = μs, σ = σs)
 end
 
-function initialize(m::BansalYaronModel, grid::StateGrid)
-    fill(1.0, size(grid))
+function initialize(m::BansalYaronModel, grid)
+    @NT(p = fill(1.0, length(grid.μ), length(grid.σ)))
 end
 
-function pde(m::BansalYaronModel, grid, y, ituple, idrift = (0.0, 0.0))
+@inline function pde(m::BansalYaronModel, state, solution)
     μbar = m.μbar ; νc = m.νc ; κμ = m.κμ ; κσ = m.κσ ; νμ = m.νμ ; νσ = m.νσ ; ρ = m.ρ ; γ = m.γ ; ψ = m.ψ
-    μ, σ = grid[ituple]
-    p, pμ, pσ, pμμ, pμσ, pσσ = derive(grid, y[1], ituple, idrift)
+    μ, σ = state.μ, state.σ
+    p, pμ, pσ, pμμ, pμσ, pσσ = solution.p, solution.pμ, solution.pσ, solution.pμμ, solution.pμσ, solution.pσσ
 
     # drift and volatility of c, μ, σ, p
     μc = μ
@@ -75,5 +75,5 @@ function pde(m::BansalYaronModel, grid, y, ituple, idrift = (0.0, 0.0))
     out = p * (1 / p + μc + μp - r - κσC - κσp)
     # out = p * (1 / p - ρ + (1 - 1 / ψ) * (μc - 0.5 * γ * σc_Zc^2) + μp + 0.5 * (1 / ψ - γ) / (1 - 1 / ψ) * σp2)
 
-    return out, (μμ, μσ), (:p => p, :μμ => μμ, :σμ_Zμ => σμ_Zμ, :σμ_Zσ => 0.0, :μσ => μσ, :σσ_Zμ => 0.0, :σσ_Zσ => σσ_Zσ, :μ => μ, :σ => σ, :σμ2 => σμ_Zμ^2, :σσ2 => σσ_Zσ^2, :σμσσ => 0.0)
+    return out, (μμ, μσ), @NT(p = p, μμ = μμ, σμ_Zμ = σμ_Zμ, σμ_Zσ = 0.0, μσ = μσ, σσ_Zμ = 0.0, σσ_Zσ = σσ_Zσ, μ = μ, σ = σ, σμ2 = σμ_Zμ^2, σσ2 = σσ_Zσ^2, σμσσ = 0.0)
 end

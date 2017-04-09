@@ -2,40 +2,38 @@ using EconPDEs, Base.Test
 
 
 m = CampbellCochraneModel()
-grid = StateGrid(m; n = 1000)
+grid = state_grid(m; n = 1000)
 y0 = initialize(m, grid)
-result, distance = solve(m, grid, y0)
-EconPDEs.simulate(grid, result, Dict(:Z => randn(10)))
+result, distance = pde_solve(m, grid, y0)
 @test distance <= 1e-5
 
 
 m = BansalYaronModel()
-grid = StateGrid(m; μn = 5, σn = 5)
+grid = state_grid(m; μn = 5, σn = 5)
 y0 = initialize(m, grid)
-result, distance = solve(m, grid, y0)
-EconPDEs.simulate(grid, result, Dict(:Zμ => randn(10), :Zσ => randn(10)))
+result, distance = pde_solve(m, grid, y0)
 @test distance <= 1e-5
 
 
 
 m = GarleanuPanageasModel()
-grid = StateGrid(m; n = 10)
+grid = state_grid(m; n = 10)
 y0 = initialize(m, grid)
-result, distance = solve(m, grid, y0)
+result, distance = pde_solve(m, grid, y0)
 @test distance <= 1e-5
 
 
 m = DiTellaModel()
-grid = StateGrid(m ; xn = 10, νn = 3)
+grid = state_grid(m ; xn = 10, νn = 3)
 y0 = initialize(m, grid)
-result, distance = solve(m, grid, y0)
+result, distance = pde_solve(m, grid, y0)
 @test distance <= 1e-5
 
 
-ap = WangWangYangModel()
-grid = StateGrid(ap; n = 10)
-y0 = initialize(ap, grid)
-result, distance = solve(ap, grid, y0)
+m = WangWangYangModel()
+grid = state_grid(m; n = 10)
+y0 = initialize(m, grid)
+result, distance = pde_solve(m, grid, y0)
 @test distance <= 1e-5
 
 

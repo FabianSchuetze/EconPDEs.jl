@@ -23,24 +23,23 @@ function DiTellaModel(;γ = 5.0, ψ = 1.5, ρ = 0.05, τ = 0.4, A = 200.0, σ = 
   DiTellaModel(γ, ψ, ρ, τ, A, σ, ϕ, νbar, κν, σνbar)
 end
 
-function StateGrid(m::DiTellaModel; xn = 80, νn = 10)
+function state_grid(m::DiTellaModel; xn = 80, νn = 10)
   γ = m.γ ; ψ = m.ψ ; ρ = m.ρ ; τ = m.τ ; A = m.A ; σ = m.σ ; ϕ = m.ϕ ; νbar = m.νbar ; κν = m.κν ; σνbar = m.σνbar
   distribution = Gamma(2 * κν * νbar / σνbar^2, σνbar^2 / (2 * κν))
   νmin = quantile(distribution, 0.001)
   νmax = quantile(distribution, 0.999)
-  StateGrid(x = linspace(0.01, 0.99, xn), ν = linspace(νmin, νmax, νn))
+  @NT(x = linspace(0.01, 0.99, xn), ν = linspace(νmin, νmax, νn))
 end
 
-function initialize(m::DiTellaModel, grid::StateGrid)
-    (fill(1.0, size(grid)), fill(1.0, size(grid)), fill(1.0, size(grid)))
+function initialize(m::DiTellaModel, grid)
+  x = fill(1.0, length(grid.x), length(grid.ν))
+  @NT(pA = x, pB = x, p = x)
 end
 
-function pde(m::DiTellaModel, grid, y, ituple, idrift = (0.0, 0.0))
+function pde(m::DiTellaModel, state, solution)
   γ = m.γ ; ψ = m.ψ ; ρ = m.ρ ; τ = m.τ ; A = m.A ; σ = m.σ ; ϕ = m.ϕ ; νbar = m.νbar ; κν = m.κν ; σνbar = m.σνbar
-  x, ν = grid[ituple]
-  pA, pAx, pAν, pAxx, pAxν, pAνν = derive(grid, y[1], ituple, idrift)
-  pB, pBx, pBν, pBxx, pBxν, pBνν = derive(grid, y[2], ituple, idrift)
-  p, px, pν, pxx, pxν, pνν = derive(grid, y[3], ituple, idrift)
+  x, ν = state.x, state.ν
+  pA, pAx, pAν, pAxx, pAxν, pAνν, pB, pBx, pBν, pBxx, pBxν, pBνν, p, px, pν, pxx, pxν, pνν = solution.pA, solution.pAx, solution.pAν, solution.pAxx, solution.pAxν, solution.pAνν, solution.pB, solution.pBx, solution.pBν, solution.pBxx, solution.pBxν, solution.pBνν, solution.p, solution.px, solution.pν, solution.pxx, solution.pxν, solution.pνν
 
   # drift and volatility of state variable ν
   g = p / (2 * A)
@@ -73,7 +72,6 @@ function pde(m::DiTellaModel, grid, y, ituple, idrift = (0.0, 0.0))
   # algebraic constraint
   out3 = p * ((1 - i) / p - x / pA - (1 - x) / pB)
 
-  return (out1, out2, out3), (μX, μν), (:p => p, :pA => pA, :pB => pB, :κ => κ, :r => r, :μX => μX, :σX => σX)
+  return (out1, out2, out3), (μX, μν), @NT(p = p, pA = pA, pB = pB, κ = κ, r = r, μX = μX, σX = σX)
 end
 
-is_algebraic(m::DiTellaModel) = (false, false, true)

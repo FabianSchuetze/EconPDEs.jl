@@ -25,7 +25,7 @@ function CampbellCochraneModel(;μ = 0.0189, σ = 0.015, γ = 2.0, ρ = 0.116, �
     CampbellCochraneModel(μ, σ, γ, ρ, κs, b)
 end
 
-function StateGrid(m::CampbellCochraneModel; smin = -300.0, n = 1000)
+function state_grid(m::CampbellCochraneModel; smin = -300.0, n = 1000)
     μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
     Sbar = σ * sqrt(γ / (κs - b / γ))
     sbar = log(Sbar)
@@ -34,17 +34,17 @@ function StateGrid(m::CampbellCochraneModel; smin = -300.0, n = 1000)
     shigh = log(linspace(0.0, exp(smax), div(n, 10)))
     slow = linspace(smin, shigh[2], n - div(n, 10))
     s = vcat(slow[1:(end-1)], shigh[2:end])
-    StateGrid(s = s)
+    @NT(s = s)
 end
 
-function initialize(m::CampbellCochraneModel, grid::StateGrid)
-    fill(1.0, size(grid)...)
+function initialize(m::CampbellCochraneModel, grid)
+    @NT(p = ones(length(grid.s)))
 end
 	
-function pde(m::CampbellCochraneModel, grid, y, ituple, idrift = (0.0, 0.0))
+function pde(m::CampbellCochraneModel, state, solution)
     μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
-    s, = grid[ituple]
-    p, ps, pss  = derive(grid, y[1], ituple, idrift)
+    s = state.s
+    p, ps, pss = solution.p, solution.ps, solution.pss
     
     # drift and volatility of state variable s
     Sbar = σ * sqrt(γ / (κs - b / γ))
@@ -65,5 +65,5 @@ function pde(m::CampbellCochraneModel, grid, y, ituple, idrift = (0.0, 0.0))
 
     # PDE
     out = p * (1 / p + μ + μp + σp * σ - r - κ * (σ + σp))
-    return out, μs, (:p => p, :κ => κ, :λ => λ, :r => r, :σp => σp, :μs => μs, :σs => σs)
+    return out, μs, @NT(p = p, κ = κ, λ = λ, r = r, σp = σp, μs = μs, σs = σs)
 end

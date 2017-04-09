@@ -5,35 +5,14 @@
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
 
-This package proposes a new, fast, and robust algorithm to solve economic models in continuous time.
+This package proposes a new, fast, and robust algorithm to solve PDEs associated with economic models in continuous time.
 
 
+# Solving  PDEs
+The function `pde_solve` allows to solve PDEs. 
 
-# `Ψtc` solves finite difference schemes
-Denote `F` the finite difference scheme corresponding to a PDE. Solving the PDE corresponds to finding `y` such that `F(y) = 0`, i.e. solving a non linear system. `Ψtc` is a non linear solver especially written for these finite difference schemes.  I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
-
-
- The solver `Ψtc` has the following syntax. 
- - The first argument is a function `F!(y, out)` which transforms `out = F(y)` in place.
- - The second argument is an array of arbitrary dimension for the initial guess for `y`
- - The option `is_algebraic` (defaults to an array of `false`) is an array indicating the eventual algebraic equations (typically market clearing conditions).
-
- Some options control the algorithm:
- - The option `Δ` (default to 1.0) specifies the initial time step. 
- - The option `inner_iterations` (default to `10`) specifies the number of inner Newton-Raphson iterations. 
- - The option `autodiff` (default to `true`) specifies that the Jacobian is evaluated using automatic differentiation.
-
-
-# `solve` solves  economic models
-The function `solve` is a higher-level function to solve economic models. In the background, the function still relies on the PDE solver `Ψtc`. It is a higher-level function in the sense that it reduces the boilerplate needed to solve models. In particular, the model automatically computes finite difference derivatives, and takes care of  upwinding the derivatives.
-
-The function allows to solve directly a variety of well-known economic models in continuous time through a common framework:
-- Asset pricing model with time varying habit (Campbell Cochrane (1999), Wachter (2005))
-- Asset pricing model with long run risk (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
-- Asset pricing model with heterogeneous agents (Garleanu Panageas (2015), DiTella (2016))
-
-To `solve` a economic model, the user only needs to define a type and three functions. I go through these definitions for the Campbell Cochrane (1999) model.
-1. A type that stores the parameters of the models. For the case of Campbell Cochrane (1999),
+To `solve` a PDE, the user needs to define a type and three functions. I go through these definitions for the PDE associated to the Campbell Cochrane (1999) model.
+1. A type that stores the parameters of the PDEs. For the case of Campbell Cochrane (1999),
 	```julia
 	type CampbellCochraneModel  <: EconPDEModel
 	    # consumption process parameters
@@ -46,47 +25,43 @@ To `solve` a economic model, the user only needs to define a type and three func
 
 	    # habit parameters
 	    κs::Float64
-	    b::Float64
 	end
 	# initialize
-	function CampbellCochraneModel(;μ = 0.0189, σ = 0.015, γ = 2.0, ρ = 0.116, κs = 0.138, b = 0.0)
-	    CampbellCochraneModel(μ, σ, γ, ρ, κs, b)
+	function CampbellCochraneModel(;μ = 0.0189, σ = 0.015, γ = 2.0, ρ = 0.116, κs = 0.13)
+	    CampbellCochraneModel(μ, σ, γ, ρ, κs)
 	end
 	```
-2. a `Stategrid` function that creates the state space grid. For the case of Campbell Cochrane (1999), I create a log-spaced grid:
+2. a `state_grid` function that returns a NamedTuple corresponding to the state space on which the PDE must be solved. For the case of Campbell Cochrane (1999), there is only one state variable, the habit.
 	```julia
-	function StateGrid(m::CampbellCochraneModel; smin = -300.0, n = 1000)
-	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
-	    Sbar = σ * sqrt(γ / (κs - b / γ))
+	function state_grid(m::CampbellCochraneModel; smin = -300.0, n = 1000)
+	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs
+	    Sbar = σ * sqrt(γ / κs)
 	    sbar = log(Sbar)
 	    smax =  sbar + 0.5 * (1 - Sbar^2)
 	    s = logspace(- 5, smax, n)
-	    StateGrid(s = s)
+	    @NT(s = s)
 	end
 	```
-3. an `initialize` function that returns an initial guess. In my experience, the pseudo transient algorithm is robust to the exact initial condition so I simply take a vector of ones:
+3. an `initialize` function that returns a NamedTuple corresponding to an an initial guess for the solution. For the case of Campbell Cochrane (1999) there is only one function to solve for, the price-dividend ratio. I simply take a vector of ones:
 
 	```julia
 	function initialize(m::CampbellCochraneModel, grid::StateGrid)
-	    fill(1.0, size(grid))
+		@NT(p = ones(grid.s))
 	end
 	```
-4. a `pde` function that returns the system of PDEs. This function encodes the model. The function takes as argument the model `m`, the grid `grid`, a current guess for the solution `y`, a tuple corresponding to the grid coordinates `ituple`, and a tuple corresponding to the drift of state varaibles at this position `idrift`. It returns  a tuple of three terms.
-	1. A tuple corresponding to the value of the PDEs at this grid point.
+4. a `pde` function that encodes the PDE. The function takes as argument the model `m`, the value of state variables `state`, and a current guess for the solution `solution`. It must return  a tuple of two terms.
+	1. A tuple corresponding to the value of the system of PDEs at this grid point.
 	2. A tuple corresponding to the drift of state variables at this grid point (used for upwinding).
-	3. A dictionary from symbols to values. This dictionary simply stores side functions computed while writing the PDE.
 
 	This is the `pde` function for the Campbell Cochrane (1999) model:
 	```julia
-	function pde(m::CampbellCochraneModel, grid, y, ituple, idrift = (0.0, 0.0))
-	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs ; b = m.b
-	    # Value of the state variable at the position ituple
-	    s, = grid[ituple]
-	    # Derivatives of the current guess y at the position ituple
-	    p, ps, pss  = derive(grid, y[1], ituple, idrift)
+	function pde(m::CampbellCochraneModel, state, solution)
+	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs
+	    s = state.s
+	    p, ps, pss  = solution.p, solution.ps, solution.pss
 	    
 	    # drift and volatility of state variable s
-	    Sbar = σ * sqrt(γ / (κs - b / γ))
+	    Sbar = σ * sqrt(γ / κs
 	    sbar = log(Sbar)
 	    λ = 1 / Sbar * sqrt(1 - 2 * (s - sbar)) - 1
 	    μs = - κs * (s - sbar)
@@ -96,7 +71,7 @@ To `solve` a economic model, the user only needs to define a type and three func
 	    κ = γ * (σ + σs)
 
 	    # risk free rate  r
-	    r = ρ + γ * μ - (γ * κs - b) / 2 + b * (sbar - s)
+	    r = ρ + γ * μ - γ * κs / 2
 
 	    # drift and volatility of p
 	    σp = ps / p * σs
@@ -104,81 +79,79 @@ To `solve` a economic model, the user only needs to define a type and three func
 
 	    # PDE
 	    out = p * (1 / p + μ + μp + σp * σ - r - κ * (σ + σp))
-	    return out, μs, (:p => p, :κ => κ, :r => r)
+	    return out, μs
 	end
 	```
 
 
-Given these definitions, one can simply call the function `solve` to solve the Campbell Cochrane (1999) model
+# Examples
+
+I have coded a variety of well-known economic models in continuous time in  `src/models`.
+- Asset pricing model with time varying habit (Campbell Cochrane (1999), Wachter (2005))
+- Asset pricing model with long run risk (Bansal Yaron (2004), Bansal, Kiku, Yaron (2009))
+- Asset pricing model with heterogeneous agents (Garleanu Panageas (2015), DiTella (2016))
 
 ```julia
-using EconPDEs 
-
-# Habit Models
+# Habit Model
 ## Campbell Cochrane (1999)
-m = CampbellCochraneModel()
-grid = StateGrid(m)
+m = CampbellCochrane()
+grid = state_grid(m)
 y0 = initialize(m, grid)
-result, distance = solve(m, grid, y0)
+result, distance = pde_solve(m, grid, y0)
 
-# graphs
-using Plots
-plotly()
-plot(exp(grid[:s]), result[:p])
-
-## Wachter (2005) calibration:
+## Wachter (2005) calibration
 m = CampbellCochraneModel(μ = 0.022, σ = 0.0086, γ = 2.0, ρ = 0.073, κs = 0.116, b = 0.011 * 4)
-grid = StateGrid(m)
+grid = state_grid(m)
 y0 = initialize(m, grid)
 result, distance = solve(m, grid, y0)
-```
 
 
-Other models are coded similarly. All the models can be found in `src/models`. 
-```julia
 # Long Run Risk Models
 ## Bansal Yaron (2004)
 m = BansalYaronModel()
-grid = StateGrid(m)
+grid = state_grid(m)
 y0 = initialize(m, grid)
-result, distance = solve(m, grid, y0)
-using Plots
-plotly()
-surface(grid[:μ], grid[:σ], result[:p])
+result, distance = pde_solve(m, grid, y0)
 ## Bansal, Kiku, Yaron (2009) calibration
 m = BansalYaronModel(μbar = 0.018, νc = 0.025, κμ = 0.3, κσ = 0.012, νμ = 0.0114, νσ = 0.189, ρ = 0.0132, γ = 7.5, ψ = 1.5)
-grid = StateGrid(m)
+grid = state_grid(m)
 y0 = initialize(m, grid)
-result, distance = solve(m, grid, y0)
+result, distance = pde_solve(m, grid, y0)
 
 # Heterogeneous Agent Models
 ## Garleanu Panageas (2015)
 m = GarleanuPanageasModel()
-grid = StateGrid(m)
+grid = state_grid(m)
 y0 = initialize(m, grid)
-result, distance = solve(m, grid, y0)
-using Plots
-plotly()
-plot(grid[:x], result[:p])
+result, distance = pde_solve(m, grid, y0)
 ## DiTella (2016)
-using EconPDEs
 m = DiTellaModel()
-grid = StateGrid(m)
+grid = state_grid(m)
 y0 = initialize(m, grid)
-result, distance = solve(m, grid, y0)
-using Plots
-plotly()
-surface(grid[:x], grid[:ν], result[:p])
+result, distance = pde_solve(m, grid, y0)
 
 # Consumption - saving problem with idiosyncratic income risk
 ## Wang Wang Yang (2016)
 ap = WangWangYangModel()
-grid = StateGrid(ap)
+grid = state_grid(ap)
 y0 = initialize(ap, grid)
-result, distance = solve(ap, grid, y0)
-
-using Plots
-plotly()
-plot(grid[:w], result[:p])
+result, distance = pde_solve(ap, grid, y0)
 ```
+
+
+
+# `nl_solve` solves finite difference schemes
+The function `pde_solve` (i) creates the finite difference scheme (ii) solve it using a non linear solver. If you simply want to solve a finite difference scheme, you can directly use `nl_solve`. The function uses a non linear solver especially written for finite difference schemes. I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
+
+ The solver `nl_solve` has the following syntax. Denote `F` the finite difference scheme corresponding to a PDE
+ - The first argument is a function `F!(y, out)` which transforms `out = F(y)` in place.
+ - The second argument is an array of arbitrary dimension for the initial guess for `y`
+ - The option `is_algebraic` (defaults to an array of `false`) is an array indicating the eventual algebraic equations (typically market clearing conditions).
+
+ Some options control the algorithm:
+ - The option `Δ` (default to 1.0) specifies the initial time step. 
+ - The option `inner_iterations` (default to `10`) specifies the number of inner Newton-Raphson iterations. 
+ - The option `autodiff` (default to `true`) specifies that the Jacobian is evaluated using automatic differentiation.
+
+
 
