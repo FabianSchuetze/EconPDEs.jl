@@ -36,7 +36,7 @@ To `solve` a PDE, the user needs to define a type and three functions. I go thro
 	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs
 	    Sbar = σ * sqrt(γ / κs)
 	    sbar = log(Sbar)
-	    smax =  sbar + 0.5 * (1 - Sbar^2)
+	    smax = sbar + 0.5 * (1 - Sbar^2)
 	    s = logspace(- 5, smax, n)
 	    @NT(s = s)
 	end
