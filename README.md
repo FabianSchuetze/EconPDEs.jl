@@ -11,6 +11,7 @@ This package proposes a new, fast, and robust algorithm to solve PDEs associated
 To `solve` a PDE, the user needs to define a type and three functions. I go through these definitions for the PDE associated to the Campbell Cochrane (1999) model.
 1. A type that stores the parameters of the PDEs. For the case of Campbell Cochrane (1999),
 	```julia
+	using EconPDEs
 	type CampbellCochraneModel  <: EconPDEModel
 	    # consumption process parameters
 	    μ::Float64 
