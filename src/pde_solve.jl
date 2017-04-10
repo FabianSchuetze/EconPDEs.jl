@@ -3,7 +3,7 @@
 # 1. creates a type by looking at expression, so something like T_NT_a_b{T1, T2}
 # 2. replace @NT by T_NT_ab
 
-
+_NT(names::Vector{Symbol}) =  eval(Expr(:macrocall, Symbol("@NT"), (x for x in names)...))
 
 #========================================================================================
 
@@ -187,7 +187,7 @@ function create_dictionary{Ngrid, Tstate, Tsolution}(apm, grid::StateGrid{Ngrid}
     A = @NT()
     if length(x) == 3
         names = keys(x[3])
-        A = _NT(names, Array(Float64, size(grid)))
+        A = _NT(names)((Array(Float64, size(grid)) for n in names)...)
         for i in eachindex(grid)
             state = getindex(grid, Tstate, i)
             solution = derive(Tsolution, grid, y, i)
@@ -209,11 +209,10 @@ end
 Solve
 
 ========================================================================================#
-
-all_symbol(names) = vcat((map(x -> Symbol(x...), with_replacement_combinations(names, k)) for k in 0:2)...)
-all_symbol(sols, states) = vec([Symbol(a, s) for s in all_symbol(states), a in sols])
-_NT(names::Vector{Symbol}) =  eval(Expr(:macrocall, Symbol("@NT"), (x for x in names)...))
-_NT(names::Vector{Symbol}, element) =  eval(Expr(:macrocall, Symbol("@NT"), (Expr(:kw, names[i], element) for i in 1:length(names))...))
+function all_symbol(sols, states)
+    all_derivatives = vcat((map(x -> Symbol(x...), with_replacement_combinations(states, k)) for k in 0:2)...)
+    vec([Symbol(a, s) for s in all_derivatives, a in sols])
+end
 
 function pde_solve(apm, grid::NamedTuple, y0::NamedTuple; is_algebraic = nothing, kwargs...)
     Tstate = _NT(keys(grid))
