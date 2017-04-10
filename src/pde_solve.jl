@@ -10,6 +10,7 @@ _NT(names::Vector{Symbol}) =  eval(Expr(:macrocall, Symbol("@NT"), (x for x in n
 Type State Grid
 
 ========================================================================================#
+
 type StateGrid{N}
     x::NTuple{N, Vector{Float64}}
     invΔx::NTuple{N, Vector{Float64}}
@@ -62,40 +63,20 @@ Base.ndims(grid) = length(size(grid))
 end
 Base.getindex{N}(grid::StateGrid{N}, x::Symbol) = grid.x[find(collect(grid.name) .== x)[1]]
 
-
 #========================================================================================
 
-Type Reflecting Array (i.e. for a vector A[0] is A[1] and A[N+1] is A[N])
+Derive
 
 ========================================================================================#
-type ReflectingArray{P, T, N} <: AbstractArray{T, N}
-    A::P
-end
-ReflectingArray{T, N}(A::AbstractArray{T, N}) = ReflectingArray{typeof(A), T, N}(A)
-Base.size(y::ReflectingArray, args...) = size(y.A, args...)
-Base.eltype{P, T, N}(y::ReflectingArray{P, T, N}) = T
-Base.eachindex(y) = eachindex(y.A)
-@generated function Base.getindex{P, T, N}(A::ReflectingArray{P, T, N}, args...)
-    quote
-        $(Expr(:meta, :inline))
-        $(Expr(:call, getindex, :(A.A), [_helper(args[i], i) for i in 1:N]...))
-    end
-end
-@generated function Base.setindex!{P, T, N}(A::ReflectingArray{P, T, N}, value, args...)
-    Expr(:call, :setindex!, :(A.A), :value, [_helper(args[i], i) for i in 1:N]...)
-end
-_helper(x::Type{Int}, i) = :(clamp(args[$i], 1, size(A.A, $i)))
-_helper(x::Type{Colon}, i) = :(:)
-
 
 # Case with 1 state variable
-@generated function derive{Tsolution}(::Type{Tsolution}, grid::StateGrid{1}, y::ReflectingArray, icar, drift = (0.0,))
+@generated function derive{Tsolution}(::Type{Tsolution}, grid::StateGrid{1}, y::AbstractArray, icar, drift = (0.0,))
     N = div(nfields(Tsolution), 3)
     expr = Expr[]
     for k in 1:N
         push!(expr, :(y[i, $k]))
-        push!(expr, :(μx >= 0.0 ? (y[i + 1, $k] - y[i, $k]) * invΔxp[i] : (y[i, $k] - y[i - 1, $k]) * invΔxm[i]))
-        push!(expr, :(y[i + 1, $k] * invΔxp[i] * invΔx[i] + y[i - 1, $k] * invΔxm[i] * invΔx[i] - 2 * y[i, $k] * invΔxp[i] * invΔxm[i]))
+        push!(expr, :(μx >= 0.0 ? (y[min(i + 1, size(y, 1)), $k] - y[i, $k]) * invΔxp[i] : (y[i, $k] - y[max(i - 1, 1), $k]) * invΔxm[i]))
+        push!(expr, :(y[min(i + 1, size(y, 1)), $k] * invΔxp[i] * invΔx[i] + y[max(i - 1, 1), $k] * invΔxm[i] * invΔx[i] - 2 * y[i, $k] * invΔxp[i] * invΔxm[i]))
     end
     out = Expr(:call, Tsolution, expr...)
     quote
@@ -110,16 +91,16 @@ _helper(x::Type{Colon}, i) = :(:)
 end
 
 # Case with 2 state variables
-@generated function derive{Tsolution}(::Type{Tsolution}, grid::StateGrid{2}, y::ReflectingArray, icar, drift = (0.0, 0.0))
+@generated function derive{Tsolution}(::Type{Tsolution}, grid::StateGrid{2}, y::AbstractArray, icar, drift = (0.0, 0.0))
     N = div(nfields(Tsolution), 6)
     expr = Expr[]
     for k in 1:N
         push!(expr, :(y[i1, i2, $k]))
         push!(expr, :((y[i1h, i2, $k] - y[i1l, i2, $k]) * invΔx1[i1]))
         push!(expr, :((y[i1, i2h, $k] - y[i1, i2l, $k]) * invΔx2[i2]))
-        push!(expr, :((y[i1 + 1, i2, $k] + y[i1 - 1, i2, $k] - 2 * y[i1, i2, $k]) * invΔx1[i1]^2))
+        push!(expr, :((y[min(i1 + 1, size(y, 1)), i2, $k] + y[max(i1 - 1, 1), i2, $k] - 2 * y[i1, i2, $k]) * invΔx1[i1]^2))
         push!(expr, :((y[i1h, i2h, $k] - y[i1h, i2l, $k] - y[i1l, i2h, $k] + y[i1l, i2l, $k]) * invΔx1[i1] * invΔx2[i2]))
-        push!(expr, :((y[i1, i2 + 1, $k] + y[i1, i2 - 1, $k] - 2 * y[i1, i2, $k]) * invΔx2[i2]^2))
+        push!(expr, :((y[i1, min(i2 + 1, size(y, 2)), $k] + y[i1, max(i2 - 1, 1), $k] - 2 * y[i1, i2, $k]) * invΔx2[i2]^2))
     end
     out = Expr(:call, Tsolution, expr...)
     quote
@@ -128,23 +109,22 @@ end
         μx1, μx2 = drift[1], drift[2]
         invΔx1, invΔx2 = grid.invΔx[1], grid.invΔx[2]
         if μx1 >= 0.0
-            i1h = i1 + 1
+            i1h = min(i1 + 1, size(y, 1))
             i1l = i1
         else
           i1h = i1
-          i1l = i1 - 1
+          i1l = max(i1 - 1, 1)
         end
         if μx2 >= 0.0
-            i2h = i2 + 1
+            i2h = min(i2 + 1, size(y, 2))
             i2l = i2
         else
           i2h = i2
-          i2l = i2 - 1
+          i2l = max(i2 - 1, 1)
         end
         $out
     end
 end
-
 
 #========================================================================================
 
@@ -154,9 +134,7 @@ Type EconPDEModel
 
 abstract EconPDEModel
 
-
 function hjb!{Ngrid, Tstate, Tsolution}(apm, grid::StateGrid{Ngrid}, ::Type{Tstate}, ::Type{Tsolution}, y, ydot)
-    y = ReflectingArray(y)
     for i in eachindex(grid)
         state = getindex(grid, Tstate, i)
         solution = derive(Tsolution, grid, y, i)
@@ -175,11 +153,10 @@ end
         $(Expr(:block, [:(setindex!(ydot, outi[$k], i, $k)) for k in 1:N]...))
     end
 end
-_setindex!(ydot, outi, i) = setindex!(ydot, outi, i)
+@inline _setindex!(ydot, outi, i) = setindex!(ydot, outi, i)
 
 
 function create_dictionary{Ngrid, Tstate, Tsolution}(apm, grid::StateGrid{Ngrid}, ::Type{Tstate}, ::Type{Tsolution}, y)
-    y = ReflectingArray(y)
     i0 = start(eachindex(grid))
     state = getindex(grid, Tstate, i0)
     solution = derive(Tsolution, grid, y, i0)
@@ -203,12 +180,12 @@ function create_dictionary{Ngrid, Tstate, Tsolution}(apm, grid::StateGrid{Ngrid}
     return A
 end
 
-
 #========================================================================================
 
 Solve
 
 ========================================================================================#
+
 function all_symbol(sols, states)
     all_derivatives = vcat((map(x -> Symbol(x...), with_replacement_combinations(states, k)) for k in 0:2)...)
     vec([Symbol(a, s) for s in all_derivatives, a in sols])
