@@ -5,8 +5,7 @@
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
 
-This package proposes a new, fast, and robust algorithm to solve PDEs associated with economic models in continuous time.
-
+This package proposes a new, fast, and robust algorithm to solve PDEs associated with economic models.
 
 # Solving  PDEs
 The function `pde_solve` allows to solve PDEs. 
@@ -46,7 +45,7 @@ To `solve` a PDE, the user needs to define a type and three functions. I go thro
 
 	```julia
 	function initialize(m::CampbellCochraneModel, grid::StateGrid)
-		@NT(p = ones(grid.s))
+	    @NT(p = ones(grid.s))
 	end
 	```
 4. a `pde` function that encodes the PDE. The function takes as argument the model `m`, the value of state variables `state`, and a current guess for the solution `solution`. It must return  a tuple of two terms.
@@ -58,10 +57,10 @@ To `solve` a PDE, the user needs to define a type and three functions. I go thro
 	function pde(m::CampbellCochraneModel, state, solution)
 	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs
 	    s = state.s
-	    p, ps, pss  = solution.p, solution.ps, solution.pss
+	    p, ps, pss = solution.p, solution.ps, solution.pss
 	    
 	    # drift and volatility of state variable s
-	    Sbar = σ * sqrt(γ / κs
+	    Sbar = σ * sqrt(γ / κs)
 	    sbar = log(Sbar)
 	    λ = 1 / Sbar * sqrt(1 - 2 * (s - sbar)) - 1
 	    μs = - κs * (s - sbar)
