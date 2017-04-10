@@ -8,7 +8,8 @@ Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 This package proposes a new, fast, and robust algorithm to solve PDEs associated with economic models.
 
 # Solving  PDEs
-The function `pde_solve` allows to solve PDEs.
+The function `pde_solve` allows to solve PDEs. It (i) creates the finite difference scheme (taking care of upwinding derivatives) (ii) solve it using a non linear solver especially written for finite difference schemes. I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
+
 
 To `solve` a PDE, the user needs to define a type and three functions. I go through these definitions for the PDE associated to the Campbell Cochrane (1999) model.
 1. A type that stores the parameters of the PDEs. For the case of Campbell Cochrane (1999),
@@ -140,7 +141,7 @@ result, distance = pde_solve(ap, grid, y0)
 
 
 # `nl_solve` solves finite difference schemes
-The function `pde_solve` (i) creates the finite difference scheme (ii) solve it using a non linear solver. If you simply want to solve a finite difference scheme, you can directly use `nl_solve`. The function uses a non linear solver especially written for finite difference schemes. I discuss in details the algorithm and its properties [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
+The function `pde_solve` solves the non linear system associated with finite difference schemes using  `nl_solve`. 
 
  The solver `nl_solve` has the following syntax. Denote `F` the finite difference scheme corresponding to a PDE
  - The first argument is a function `F!(y, out)` which transforms `out = F(y)` in place.
