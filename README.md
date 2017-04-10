@@ -5,7 +5,7 @@
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
 
-This package proposes a new, fast, and robust algorithm to solve PDEs associated with economic models. I discuss in details this algorithm [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf)
+This package proposes a new, fast, and robust algorithm to solve PDEs associated with economic models. I discuss in details this algorithm [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf).
 
 # Solving  PDEs
 To `solve` a PDE, the user needs to define a type and three functions. I go through these definitions for the PDE associated to the Campbell Cochrane (1999) model.
@@ -137,10 +137,10 @@ result, distance = pde_solve(ap, grid, y0)
 
 
 
-# `nl_solve` solves finite difference schemes
-`nl_solve` solves the non linear system associated with finite difference schemes. This low level function is called by `pde_solve` internally. You can also use it directly.
+# Internal Functions
+`pde_solve` internally calls `nl_solve` to solve the non linear system associated with finite difference schemes. You can also call this function directly.
 
- The solver `nl_solve` has the following syntax. Denote `F` the finite difference scheme corresponding to a PDE
+ The solver `nl_solve` has the following syntax. Denote `F` the finite difference scheme corresponding to a PDE. The goal is to find `y` such that `F(y) = 0`.
  - The first argument is a function `F!(y, out)` which transforms `out = F(y)` in place.
  - The second argument is an array of arbitrary dimension for the initial guess for `y`
  - The option `is_algebraic` (defaults to an array of `false`) is an array indicating the eventual algebraic equations (typically market clearing conditions).
