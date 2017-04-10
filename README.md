@@ -8,7 +8,7 @@ Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 This package proposes a new, fast, and robust algorithm to solve PDEs associated with economic models.
 
 # Solving  PDEs
-The function `pde_solve` allows to solve PDEs. 
+The function `pde_solve` allows to solve PDEs.
 
 To `solve` a PDE, the user needs to define a type and three functions. I go through these definitions for the PDE associated to the Campbell Cochrane (1999) model.
 1. A type that stores the parameters of the PDEs. For the case of Campbell Cochrane (1999),
@@ -30,7 +30,7 @@ To `solve` a PDE, the user needs to define a type and three functions. I go thro
 	    CampbellCochraneModel(μ, σ, γ, ρ, κs)
 	end
 	```
-2. a `state_grid` function that returns a NamedTuple corresponding to the state space on which the PDE must be solved. For the case of Campbell Cochrane (1999), there is only one state variable, the habit.
+2. a `state_grid` function that returns the state space on which the PDE must be solved. For the case of Campbell Cochrane (1999), there is only one state variable, the habit.
 	```julia
 	function state_grid(m::CampbellCochraneModel; smin = -300.0, n = 1000)
 	    μ = m.μ ; σ = m.σ ; γ = m.γ ; ρ = m.ρ ; κs = m.κs
@@ -41,7 +41,7 @@ To `solve` a PDE, the user needs to define a type and three functions. I go thro
 	    @NT(s = s)
 	end
 	```
-3. an `initialize` function that returns a NamedTuple corresponding to an an initial guess for the solution. For the case of Campbell Cochrane (1999) there is only one function to solve for, the price-dividend ratio. I simply take a vector of ones:
+3. an `initialize` function that returns an initial guess for the solution. For the case of Campbell Cochrane (1999) there is only one function to solve for, the price-dividend ratio. I simply take a vector of ones:
 
 	```julia
 	function initialize(m::CampbellCochraneModel, grid::StateGrid)
