@@ -137,10 +137,11 @@ result, distance = pde_solve(ap, grid, y0)
 
 
 
-# Internal Functions
+# Non Linear Solver
 `pde_solve` internally calls `nl_solve` to solve the non linear system associated with finite difference schemes. You can also call this function directly.
 
- The solver `nl_solve` has the following syntax. Denote `F` the finite difference scheme corresponding to a PDE. The goal is to find `y` such that `F(y) = 0`.
+Denote `F` the finite difference scheme corresponding to a PDE. The goal is to find `y` such that `F(y) = 0`.  The function `nl_solve` has the following syntax:
+
  - The first argument is a function `F!(y, out)` which transforms `out = F(y)` in place.
  - The second argument is an array of arbitrary dimension for the initial guess for `y`
  - The option `is_algebraic` (defaults to an array of `false`) is an array indicating the eventual algebraic equations (typically market clearing conditions).
