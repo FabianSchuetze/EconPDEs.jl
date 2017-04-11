@@ -7,7 +7,7 @@ Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 
 This package proposes a new, fast, and robust algorithm to solve PDEs associated with economic models. I discuss in details this algorithm [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf). I show that the algorithm provides a unified way to solve well-known asset pricing models in continuous time.
 
-# Solving  PDEs
+# Syntax for Solving  PDEs
 To `solve` a PDE, the user needs to define a type and three functions. I go through these definitions for the PDE associated to the Campbell Cochrane (1999) model.
 1. A type that stores the parameters of the PDEs. For the case of Campbell Cochrane (1999),
 	```julia
@@ -137,7 +137,7 @@ result, distance = pde_solve(ap, grid, y0)
 
 
 
-# Non Linear Solver
+# Syntax for Solving Non Linear Systems
 `pde_solve` internally calls `nl_solve` to solve the non linear system associated with finite difference schemes. You can also call this function directly.
 
 Denote `F` the finite difference scheme corresponding to a PDE. The goal is to find `y` such that `F(y) = 0`.  The function `nl_solve` has the following syntax:
