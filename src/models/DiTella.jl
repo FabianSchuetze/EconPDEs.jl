@@ -36,7 +36,7 @@ function initialize(m::DiTellaModel, grid)
   @NT(pA = x, pB = x, p = x)
 end
 
-function pde(m::DiTellaModel, state, solution)
+@inline function pde(m::DiTellaModel, state, solution)
   γ = m.γ ; ψ = m.ψ ; ρ = m.ρ ; τ = m.τ ; A = m.A ; σ = m.σ ; ϕ = m.ϕ ; νbar = m.νbar ; κν = m.κν ; σνbar = m.σνbar
   x, ν = state.x, state.ν
   pA, pAx, pAν, pAxx, pAxν, pAνν, pB, pBx, pBν, pBxx, pBxν, pBνν, p, px, pν, pxx, pxν, pνν = solution.pA, solution.pAx, solution.pAν, solution.pAxx, solution.pAxν, solution.pAνν, solution.pB, solution.pBx, solution.pBν, solution.pBxx, solution.pBxν, solution.pBνν, solution.p, solution.px, solution.pν, solution.pxx, solution.pxν, solution.pνν

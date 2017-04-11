@@ -96,7 +96,6 @@ m = CampbellCochrane()
 grid = state_grid(m)
 y0 = initialize(m, grid)
 result, distance = pde_solve(m, grid, y0)
-
 ## Wachter (2005) calibration
 m = CampbellCochraneModel(μ = 0.022, σ = 0.0086, γ = 2.0, ρ = 0.073, κs = 0.116, b = 0.011 * 4)
 grid = state_grid(m)

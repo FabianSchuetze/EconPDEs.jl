@@ -39,7 +39,7 @@ function initialize(m::GarleanuPanageasModel, grid)
     @NT(pA = x, pB = x, ϕ1 = x, ϕ2 = x)
 end
 
-function pde(m::GarleanuPanageasModel, state, solution)
+@inline function pde(m::GarleanuPanageasModel, state, solution)
   γA = m.γA ; ψA = m.ψA ; γB = m.γB ; ψB = m.ψB ; ρ = m.ρ ; δ = m.δ ; νA = m.νA ; μ = m.μ ; σ = m.σ; B1 = m.B1 ; δ1 = m.δ1 ; B2 = m.B2 ; δ2 = m.δ2 ; ω = m.ω
   x = state.x
   pA, pAx, pAxx, pB, pBx, pBxx, ϕ1, ϕ1x, ϕ1xx, ϕ2, ϕ2x, ϕ2xx = solution.pA, solution.pAx, solution.pAxx, solution.pB, solution.pBx, solution.pBxx, solution.ϕ1, solution.ϕ1x, solution.ϕ1xx, solution.ϕ2, solution.ϕ2x, solution.ϕ2xx 

@@ -27,6 +27,7 @@ m = DiTellaModel()
 grid = state_grid(m ; xn = 10, νn = 3)
 y0 = initialize(m, grid)
 result, distance = pde_solve(m, grid, y0)
+@time pde_solve(m, grid, y0, is_algebraic = (false, false, true))
 @test distance <= 1e-5
 
 

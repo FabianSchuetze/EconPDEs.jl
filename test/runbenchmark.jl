@@ -29,6 +29,7 @@ y0 = initialize(m, grid)
 @time pde_solve(m, grid, y0)
 @time pde_solve(m, grid, y0)
 # 30.820142s, 10.2 GB
+@time pde_solve(m, grid, y0, is_algebraic = (false, false, true))
 
 m = WangWangYangModel()
 grid = state_grid(m)

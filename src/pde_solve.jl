@@ -191,13 +191,11 @@ function all_symbol(sols, states)
     vec([Symbol(a, s) for s in all_derivatives, a in sols])
 end
 
-function pde_solve(apm, grid::NamedTuple, y0::NamedTuple; is_algebraic = nothing, kwargs...)
+function pde_solve(apm, grid::NamedTuple, y0::NamedTuple; is_algebraic = map(x -> false, y0), kwargs...)
     Tstate = _NT(keys(grid))
     Tsolution = _NT(all_symbol(keys(y0), keys(grid)))
     stategrid = StateGrid(grid)
-    if is_algebraic == nothing
-        is_algebraic = _NT(keys(y0))((fill(false, size(x)) for x in y0)...)
-    end
+    is_algebraic = _NT(keys(y0))((fill(is_algebraic[i], size(y0[i])) for i in 1:length(y0))...)
     y, distance = nl_solve((y, ydot) -> hjb!(apm, stategrid, Tstate, Tsolution, y, ydot), _concatenate(y0); is_algebraic = _concatenate(is_algebraic), kwargs...)
     a = create_dictionary(apm, stategrid, Tstate, Tsolution, y)
     y = _deconcatenate(typeof(y0), y)
