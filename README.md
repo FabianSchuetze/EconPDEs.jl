@@ -5,7 +5,7 @@
 Pkg.clone("https://github.com/matthieugomez/EconPDEs.jl")
 ```
 
-This package proposes a new, fast, and robust algorithm to solve PDEs associated with economic models. I discuss in details this algorithm [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf).
+This package proposes a new, fast, and robust algorithm to solve PDEs associated with economic models. I discuss in details this algorithm [here](https://github.com/matthieugomez/EconPDEs.jl/blob/master/src/details.pdf). I show that the algorithm provides a unified way to solve well-known asset pricing models in continuous time.
 
 # Solving  PDEs
 To `solve` a PDE, the user needs to define a type and three functions. I go through these definitions for the PDE associated to the Campbell Cochrane (1999) model.
